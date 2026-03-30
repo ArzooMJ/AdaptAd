@@ -20,9 +20,11 @@ from ..agents.advertiser_advocate import score_advertiser_advocate
 from ..agents.negotiator import negotiate
 from ..simulation.session import simulate_session, apply_decision
 from ..simulation.fatigue import should_force_suppress
-from ..state import AdDecision, Chromosome, Season, TimeOfDay
-from .routes_data import get_users, get_ads, get_content
+from ..state import AdDecision, ContentMood, ContentItem, TimeOfDay, UserProfile
+from ..data.content_library import GENRE_MOODS, _generate_intensity_curve, _natural_break_points
+from .routes_data import get_ads, get_content, get_users
 from .routes_decide import get_chromosome
+from ..agents.llm_reasoning import lookup_show_metadata
 
 router = APIRouter(prefix="/api/ab", tags=["ab"])
 
@@ -35,6 +37,39 @@ class ABStartRequest(BaseModel):
     user_id: Optional[int] = None       # If None, pick random user.
     content_id: Optional[int] = None    # If None, pick random content.
     seed: Optional[int] = None
+
+
+class CustomABRequest(BaseModel):
+    """Profile-driven A/B test — participant describes themselves and their content."""
+    person_name: str = "You"
+    age_group: str = "25-34"
+    occupation: str = "Professional"
+    interests: list[str] = ["tech"]          # ad categories
+    content_preferences: list[str] = ["Drama"]  # genres
+    ad_tolerance: float = 0.5
+    binge_tendency: float = 0.4
+    preferred_watch_time: str = "evening"    # morning / afternoon / evening / latenight
+    show_title: str = "My Show"
+    show_genre: str = "Drama"
+    show_duration_minutes: int = 45
+    is_series: bool = True
+    seed: Optional[int] = None
+
+    @field_validator("age_group")
+    @classmethod
+    def validate_age(cls, v: str) -> str:
+        valid = {"13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"}
+        return v if v in valid else "25-34"
+
+    @field_validator("ad_tolerance", "binge_tendency")
+    @classmethod
+    def clamp(cls, v: float) -> float:
+        return max(0.0, min(1.0, v))
+
+    @field_validator("show_duration_minutes")
+    @classmethod
+    def clamp_duration(cls, v: int) -> int:
+        return max(10, min(240, v))
 
 
 class ABRatingRequest(BaseModel):
@@ -321,6 +356,125 @@ def get_ab_results():
             for s in _ab_sessions.values()
         ],
         "aggregate": aggregate,
+    }
+
+
+class LookupShowRequest(BaseModel):
+    title: str
+
+
+@router.post("/lookup-show")
+def lookup_show(req: LookupShowRequest):
+    """Use LLM to infer genre, duration, series/movie status from a show title."""
+    return lookup_show_metadata(req.title)
+
+
+@router.post("/custom")
+def start_custom_ab_session(req: CustomABRequest):
+    """Run an A/B test from a participant's own profile and the content they are watching."""
+    from ..data.constants import AD_CATEGORIES
+    rng = random.Random(req.seed or random.randint(0, 2**31))
+
+    valid_interests = [i for i in req.interests if i in set(AD_CATEGORIES)]
+    if not valid_interests:
+        valid_interests = ["tech"]
+
+    valid_prefs = req.content_preferences if req.content_preferences else ["Drama"]
+
+    try:
+        watch_time = TimeOfDay(req.preferred_watch_time)
+    except ValueError:
+        watch_time = TimeOfDay.evening
+
+    user = UserProfile(
+        id=99999,
+        name=req.person_name.strip() or "You",
+        age_group=req.age_group,
+        country="",
+        profession=req.occupation.strip() or "Professional",
+        interests=valid_interests,
+        preferred_watch_time=watch_time,
+        ad_tolerance=req.ad_tolerance,
+        fatigue_level=0.2,
+        engagement_score=0.7,
+        session_count=10,
+        watch_history=[],
+        binge_tendency=req.binge_tendency,
+        content_preferences=valid_prefs,
+    )
+
+    genre = req.show_genre if req.show_genre in GENRE_MOODS else "Drama"
+    mood_choices = GENRE_MOODS[genre]
+    moods, mood_weights = zip(*mood_choices)
+    mood = ContentMood(rng.choices(list(moods), weights=list(mood_weights), k=1)[0])
+    duration = req.show_duration_minutes
+    intensity = _generate_intensity_curve(duration, mood, rng)
+    breaks = _natural_break_points(duration, req.is_series, intensity, rng)
+
+    content = ContentItem(
+        id=99999,
+        title=req.show_title.strip() or "My Show",
+        genre=genre,
+        language="Custom",
+        duration_minutes=duration,
+        mood=mood,
+        is_series=req.is_series,
+        natural_break_points=breaks,
+        intensity_curve=intensity,
+    )
+
+    ads = get_ads()
+    chromosome = get_chromosome()
+    seed = req.seed or rng.randint(0, 2**31)
+
+    adaptad_records = _run_adaptad_session(user, content, ads, chromosome, seed)
+    random_records = _run_random_session(user, content, ads, seed + 1)
+
+    attempts = 0
+    while (
+        [r["decision"] for r in adaptad_records] == [r["decision"] for r in random_records]
+        and attempts < 5
+    ):
+        random_records = _run_random_session(user, content, ads, seed + attempts + 10)
+        attempts += 1
+
+    if rng.random() < 0.5:
+        session_x_records, session_y_records, x_is_adaptad = adaptad_records, random_records, True
+    else:
+        session_x_records, session_y_records, x_is_adaptad = random_records, adaptad_records, False
+
+    user_profile = _build_user_profile(user)
+    content_profile = _build_content_profile(content)
+    session_context = _build_session_context(user, content, adaptad_records)
+
+    session_id = str(uuid.uuid4())
+    _ab_sessions[session_id] = {
+        "session_id": session_id,
+        "user_id": user.id,
+        "user_name": user.name,
+        "user_profile": user_profile,
+        "content_id": content.id,
+        "content_title": content.title,
+        "content_profile": content_profile,
+        "session_context": session_context,
+        "session_x": session_x_records,
+        "session_y": session_y_records,
+        "x_is_adaptad": x_is_adaptad,
+        "ratings": {},
+        "created_at": datetime.utcnow().isoformat(),
+        "completed": False,
+        "is_custom": True,
+    }
+
+    return {
+        "session_id": session_id,
+        "user_name": user.name,
+        "user_profile": user_profile,
+        "content_title": content.title,
+        "content_profile": content_profile,
+        "session_context": session_context,
+        "session_x": session_x_records,
+        "session_y": session_y_records,
     }
 
 
