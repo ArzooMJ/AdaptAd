@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dataApi, simulateApi, type User, type ContentItem, type SimulationResult } from '../api/client'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, BarChart, Legend } from 'recharts'
 import DecisionBadge from '../components/DecisionBadge'
 import FatigueMeter from '../components/FatigueMeter'
 import SessionTimeline from '../components/SessionTimeline'
@@ -109,6 +110,33 @@ export default function SessionSimulator() {
               </div>
 
               <FatigueMeter value={result.summary.final_fatigue} />
+
+              <div className="card">
+                <h3 className="section-title mb-3">Fatigue &amp; Ads Over Session</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart
+                    data={result.decisions.map((d) => ({
+                      min: `${d.break_minute}m`,
+                      fatigue: parseFloat((d.fatigue_at_break * 100).toFixed(1)),
+                      ads_shown: d.ads_shown_before,
+                    }))}
+                    margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="min" stroke="#475569" tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <YAxis yAxisId="left" stroke="#475569" tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#475569" tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8 }}
+                      labelStyle={{ color: '#cbd5e1' }}
+                      formatter={(v: number, name: string) => [name === 'fatigue' ? `${v}%` : v, name === 'fatigue' ? 'Fatigue' : 'Ads shown']}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 12, color: '#64748b' }} />
+                    <Area yAxisId="left" type="monotone" dataKey="fatigue" stroke="#f97316" fill="#f9731620" strokeWidth={2} dot={false} name="fatigue" />
+                    <Area yAxisId="right" type="monotone" dataKey="ads_shown" stroke="#0ea5e9" fill="#0ea5e920" strokeWidth={2} dot={false} name="ads_shown" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
 
               <div className="card">
                 <h3 className="section-title mb-3">Summary</h3>

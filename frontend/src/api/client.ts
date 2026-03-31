@@ -95,8 +95,9 @@ export const abApi = {
   start: (params?: { user_id?: number; content_id?: number; seed?: number }) =>
     api.post<{ session_id: string; user_name: string; content_title: string; session_x: unknown[]; session_y: unknown[] }>('/ab/start', params || {}),
   startCustom: (params: {
-    person_name: string; age_group: string; country: string
-    interests: string[]; ad_tolerance: number
+    person_name: string; age_group: string; occupation: string
+    interests: string[]; content_preferences: string[]
+    ad_tolerance: number; binge_tendency: number; preferred_watch_time: string
     show_title: string; show_genre: string; show_duration_minutes: number; is_series: boolean
     seed?: number
   }) =>
