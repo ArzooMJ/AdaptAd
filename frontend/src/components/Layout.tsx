@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import NavBar from './NavBar'
+import ParticleBackground from './ParticleBackground'
 
 function StickPeople() {
   return (
@@ -65,12 +66,15 @@ function StickPeople() {
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-[#080b0f]">
-      <NavBar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Outlet />
-      </main>
-      <StickPeople />
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-page)' }}>
+      <ParticleBackground />
+      <div className="relative" style={{ zIndex: 1 }}>
+        <NavBar />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <Outlet />
+        </main>
+        <StickPeople />
+      </div>
     </div>
   )
 }

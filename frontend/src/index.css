@@ -2,45 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme tokens ────────────────────────────────────────────────────────────
+   Light mode: clean slate / white.
+   Dark mode:  deep terminal black.
+   All component classes reference these vars so toggling the html.dark class
+   actually changes the UI.
+─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg-page:       #f1f5f9;
+  --bg-card:       #ffffff;
+  --bg-card-deep:  #f8fafc;
+  --border:        #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --scrollbar-track: #e2e8f0;
+  --scrollbar-thumb: #94a3b8;
+}
+
+html.dark {
+  --bg-page:       #080b0f;
+  --bg-card:       #0d1117;
+  --bg-card-deep:  #0a0e14;
+  --border:        #1a2332;
+  --border-subtle: #111827;
+  --text-primary:  #f4f4f5;
+  --text-secondary:#a1a1aa;
+  --text-muted:    #52525b;
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #1e2d3d;
+}
+
 @layer base {
   body {
-    @apply bg-[#080b0f] text-zinc-100 antialiased;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    @apply antialiased;
     font-feature-settings: "cv11", "ss01";
-  }
-
-  /* Subtle grid overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Radial depth */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 15% 15%, rgba(0,212,255,0.05) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 35% at 85% 85%, rgba(0,255,136,0.04) 0%, transparent 55%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Light mode (minimal — kept readable) */
-  .light body {
-    @apply bg-slate-50 text-slate-900;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   ::-webkit-scrollbar        { @apply w-1.5 h-1.5; }
-  ::-webkit-scrollbar-track  { background: #0d1117; }
-  ::-webkit-scrollbar-thumb  { background: #1e2d3d; border-radius: 999px; }
+  ::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb  { background: var(--scrollbar-thumb); border-radius: 999px; }
   ::-webkit-scrollbar-thumb:hover { background: #00d4ff40; }
 }
 
@@ -48,13 +53,9 @@
 
   /* ── Cards ─────────────────────────────────────────────────────────────── */
   .card {
-    @apply relative bg-[#0d1117] border border-[#1a2332] rounded-2xl p-4 sm:p-5
-           shadow-xl shadow-black/40
-           transition-all duration-300;
-  }
-
-  .card-hover {
-    @apply card hover:border-[#00d4ff]/25 hover:shadow-glow-brand;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    @apply rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300;
   }
 
   /* ── Buttons ────────────────────────────────────────────────────────────── */
@@ -69,13 +70,15 @@
   }
 
   .btn-secondary {
-    @apply bg-transparent hover:bg-[#0d1f2d] active:bg-[#0a1820]
-           text-zinc-300 border border-[#1e3048]
-           hover:border-[#00d4ff]/40 hover:text-white
-           px-5 py-3 rounded-xl font-semibold
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    @apply px-5 py-3 rounded-xl font-semibold
            transition-all duration-200 text-sm tracking-wide
-           min-h-[44px] touch-manipulation select-none;
+           min-h-[44px] touch-manipulation select-none
+           hover:border-[#00d4ff]/40;
   }
+  .btn-secondary:hover { color: var(--text-primary); }
 
   .btn-danger {
     @apply bg-[#ff2d55] hover:bg-[#e0263f] active:bg-[#cc0033]
@@ -87,31 +90,39 @@
 
   /* ── Form elements ──────────────────────────────────────────────────────── */
   .label {
-    @apply text-xs text-zinc-500 font-semibold uppercase tracking-widest;
+    color: var(--text-muted);
+    @apply text-xs font-semibold uppercase tracking-widest;
   }
 
   .select-input {
-    @apply bg-[#0d1117] border border-[#1a2332] rounded-xl px-3 py-3 text-zinc-100
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    @apply rounded-xl px-3 py-3
            focus:outline-none focus:ring-2 focus:ring-[#00d4ff]/30 focus:border-[#00d4ff]/50
-           transition-all duration-200 hover:border-[#1e3048]
+           transition-all duration-200
            min-h-[44px] text-base sm:text-sm;
   }
 
   /* ── Page structure ─────────────────────────────────────────────────────── */
   .page-header {
-    @apply border-b border-[#1a2332] pb-5;
+    border-bottom: 1px solid var(--border);
+    @apply pb-5;
   }
 
   .page-title {
-    @apply text-2xl font-bold text-white tracking-tight;
+    color: var(--text-primary);
+    @apply text-2xl font-bold tracking-tight;
   }
 
   .page-sub {
-    @apply text-sm text-zinc-500 mt-1.5;
+    color: var(--text-secondary);
+    @apply text-sm mt-1.5;
   }
 
   .section-title {
-    @apply text-sm font-semibold text-zinc-200;
+    color: var(--text-primary);
+    @apply text-sm font-semibold;
   }
 
   /* ── Gradient text ──────────────────────────────────────────────────────── */
@@ -122,7 +133,7 @@
     animation: gradient-x 6s ease infinite;
   }
 
-  /* ── Glow text shadows ──────────────────────────────────────────────────── */
+  /* ── Glow shadows ───────────────────────────────────────────────────────── */
   .stat-glow-brand  { text-shadow: 0 0 24px rgba(0,212,255,0.5); }
   .stat-glow-accent { text-shadow: 0 0 24px rgba(0,255,136,0.5); }
 }

@@ -24,7 +24,7 @@ export default function NavBar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <nav className="bg-[#080b0f]/90 backdrop-blur-md border-b border-[#1a2332] sticky top-0 z-50 overflow-hidden">
+    <nav className="backdrop-blur-md sticky top-0 z-50 overflow-hidden" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-page) 90%, transparent)', borderBottom: '1px solid var(--border)' }}>
       {/* Scanning shimmer */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="h-full w-8 bg-gradient-to-r from-transparent via-[#00d4ff]/8 to-transparent animate-scan" />
@@ -75,7 +75,7 @@ export default function NavBar() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden border-t border-[#1a2332] bg-[#080b0f]/98 px-4 py-3 space-y-0.5">
+        <div className="md:hidden px-4 py-3 space-y-0.5" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-page)' }}>
           {links.map((l) => (
             <NavLink
               key={l.to} to={l.to} end={l.to === '/'}

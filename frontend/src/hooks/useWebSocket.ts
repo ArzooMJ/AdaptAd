@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
 export type WsMessage =
-  | { type: 'generation'; data: { generation: number; best_fitness: number; avg_fitness: number; diversity: number } }
+  | { type: 'generation'; data: { generation: number; best_fitness: number; avg_fitness: number; diversity: number; best_chromosome?: number[] | null } }
   | { type: 'converged'; data: { final_generation: number; best_chromosome: number[]; fitness: number } }
   | { type: 'error'; data: { message: string } }
   | { type: 'stopped'; data: Record<string, never> }
