@@ -9,14 +9,58 @@ export default {
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       colors: {
-        show:     { DEFAULT: '#22c55e', light: '#bbf7d0', dark: '#15803d' },
-        soften:   { DEFAULT: '#f59e0b', light: '#fde68a', dark: '#b45309' },
-        delay:    { DEFAULT: '#f97316', light: '#fed7aa', dark: '#c2410c' },
-        suppress: { DEFAULT: '#ef4444', light: '#fecaca', dark: '#b91c1c' },
+        brand: {
+          DEFAULT: '#00d4ff',   // electric cyan — primary accent
+          dim:     '#0099bb',
+          glow:    'rgba(0,212,255,0.15)',
+        },
+        accent: {
+          DEFAULT: '#00ff88',   // electric green — success / SHOW
+          dim:     '#00c466',
+        },
+        show:     { DEFAULT: '#00ff88', light: '#b3ffe0', dark: '#00994d' },
+        soften:   { DEFAULT: '#ffb800', light: '#fff0b3', dark: '#cc9300' },
+        delay:    { DEFAULT: '#ff6b00', light: '#ffd9b3', dark: '#cc5500' },
+        suppress: { DEFAULT: '#ff2d55', light: '#ffb3c0', dark: '#cc0033' },
       },
       boxShadow: {
-        'glow-violet': '0 0 20px rgba(139, 92, 246, 0.15)',
-        'glow-cyan':   '0 0 20px rgba(34, 211, 238, 0.15)',
+        'glow-brand':  '0 0 24px rgba(0,212,255,0.20)',
+        'glow-accent': '0 0 24px rgba(0,255,136,0.20)',
+        'glow-red':    '0 0 16px rgba(255,45,85,0.25)',
+      },
+      keyframes: {
+        'gradient-x': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%':      { backgroundPosition: '100% 50%' },
+        },
+        'slide-up': {
+          '0%':   { opacity: '0', transform: 'translateY(14px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'ticker-in': {
+          '0%':   { opacity: '0', transform: 'translateX(-10px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'scan': {
+          '0%':   { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(400%)' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%':      { transform: 'translateY(-5px)' },
+        },
+      },
+      animation: {
+        'gradient-x': 'gradient-x 6s ease infinite',
+        'slide-up':   'slide-up 0.45s ease-out',
+        'fade-in':    'fade-in 0.35s ease-out',
+        'ticker-in':  'ticker-in 0.3s ease-out',
+        'scan':       'scan 3.5s linear infinite',
+        'float':      'float 3s ease-in-out infinite',
       },
     },
   },

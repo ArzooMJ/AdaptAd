@@ -15,8 +15,8 @@ const links = [
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-3.5 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 touch-manipulation ${
     isActive
-      ? 'bg-violet-600/20 text-violet-600 dark:text-violet-300 ring-1 ring-violet-500/40 shadow-sm shadow-violet-900/30'
-      : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10'
+      ? 'bg-[#00d4ff]/10 text-[#00d4ff] ring-1 ring-[#00d4ff]/30'
+      : 'text-zinc-500 hover:text-zinc-100 hover:bg-white/5 active:bg-white/10'
   }`
 
 export default function NavBar() {
@@ -24,11 +24,17 @@ export default function NavBar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <nav className="bg-white/80 dark:bg-[#090914]/80 backdrop-blur-md border-b border-slate-200 dark:border-violet-900/30 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <nav className="bg-[#080b0f]/90 backdrop-blur-md border-b border-[#1a2332] sticky top-0 z-50 overflow-hidden">
+      {/* Scanning shimmer */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="h-full w-8 bg-gradient-to-r from-transparent via-[#00d4ff]/8 to-transparent animate-scan" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center h-14 gap-2">
+
           {/* Brand */}
-          <span className="font-bold text-sm tracking-widest uppercase shrink-0 mr-4 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          <span className="font-bold text-sm tracking-widest uppercase shrink-0 mr-4 gradient-text">
             AdaptAd
           </span>
 
@@ -41,19 +47,19 @@ export default function NavBar() {
             ))}
           </div>
 
-          {/* Fitness pill — desktop */}
+          {/* Fitness pill */}
           {fitness != null && (
-            <div className="hidden md:flex items-center gap-2 ml-auto shrink-0 bg-violet-900/20 border border-violet-700/30 rounded-full px-3.5 py-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-sm shadow-cyan-400/50" />
-              <span className="text-xs text-cyan-300 font-mono font-medium">
+            <div className="hidden md:flex items-center gap-2 ml-auto shrink-0 bg-[#00d4ff]/5 border border-[#00d4ff]/20 rounded-full px-3.5 py-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00d4ff] animate-pulse shadow-sm shadow-[#00d4ff]/60" />
+              <span className="text-xs text-[#00d4ff] font-mono font-semibold">
                 {fitness.toFixed(4)}
               </span>
             </div>
           )}
 
-          {/* Hamburger — mobile */}
+          {/* Hamburger */}
           <button
-            className="md:hidden ml-auto p-2.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="md:hidden ml-auto p-2.5 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/5 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle navigation"
           >
@@ -69,17 +75,15 @@ export default function NavBar() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden border-t border-slate-200 dark:border-violet-900/30 bg-white/95 dark:bg-[#090914]/95 px-4 py-3 space-y-0.5">
+        <div className="md:hidden border-t border-[#1a2332] bg-[#080b0f]/98 px-4 py-3 space-y-0.5">
           {links.map((l) => (
             <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
+              key={l.to} to={l.to} end={l.to === '/'}
               className={({ isActive }) =>
                 `block px-3.5 py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 touch-manipulation min-h-[44px] ${
                   isActive
-                    ? 'bg-violet-600/20 text-violet-600 dark:text-violet-300 ring-1 ring-violet-500/30'
-                    : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10'
+                    ? 'bg-[#00d4ff]/10 text-[#00d4ff] ring-1 ring-[#00d4ff]/25'
+                    : 'text-zinc-500 hover:text-zinc-100 hover:bg-white/5'
                 }`
               }
               onClick={() => setOpen(false)}
@@ -88,8 +92,8 @@ export default function NavBar() {
             </NavLink>
           ))}
           {fitness != null && (
-            <p className="px-3 pt-2.5 text-xs text-zinc-500 font-mono border-t border-violet-900/30 mt-2">
-              Fitness: <span className="text-cyan-400">{fitness.toFixed(4)}</span>
+            <p className="px-3 pt-2.5 text-xs text-zinc-500 font-mono border-t border-[#1a2332] mt-2">
+              Fitness: <span className="text-[#00d4ff]">{fitness.toFixed(4)}</span>
             </p>
           )}
         </div>
