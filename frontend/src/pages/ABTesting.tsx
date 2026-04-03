@@ -148,17 +148,32 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
   label: string; breaks: Break[]; rating: Rating
   onRate?: (f: keyof Rating, v: number) => void; readonly?: boolean
 }) {
+  // Group ads by break minute to form pods
+  const pods: { minute: number; ads: Break[] }[] = []
+  for (const b of breaks) {
+    const existing = pods.find(p => p.minute === b.break_minute)
+    if (existing) existing.ads.push(b)
+    else pods.push({ minute: b.break_minute, ads: [b] })
+  }
+
   return (
     <div className="card flex-1 min-w-0 space-y-4">
       <h3 className="text-sm font-bold text-slate-300">Session {label}</h3>
-      <div className="space-y-1.5">
-        {breaks.length === 0
+      <div className="space-y-3">
+        {pods.length === 0
           ? <p className="text-xs text-slate-600">No ad breaks</p>
-          : breaks.map((b, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-slate-500 font-mono text-xs w-8 shrink-0">{b.break_minute}m</span>
-                <DecisionBadge decision={b.decision} size="sm" />
-                <span className="text-slate-500 text-xs">{b.ad_category}</span>
+          : pods.map((pod, i) => (
+              <div key={i} className="rounded-lg border border-slate-700/50 bg-slate-800/30 px-3 py-2 space-y-1.5">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  {pod.minute}m — {pod.ads.length} ad{pod.ads.length > 1 ? 's' : ''}
+                </span>
+                {pod.ads.map((b, j) => (
+                  <div key={j} className="flex items-center gap-2 pl-1">
+                    <span className="text-slate-600 text-xs w-3">{j + 1}.</span>
+                    <DecisionBadge decision={b.decision} size="sm" />
+                    <span className="text-slate-500 text-xs">{b.ad_category}</span>
+                  </div>
+                ))}
               </div>
             ))}
       </div>

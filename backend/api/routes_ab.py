@@ -87,52 +87,66 @@ class ABRatingRequest(BaseModel):
         return v
 
 
+def _pod_size(rng: random.Random) -> int:
+    """Return number of ads in this break pod. Weighted like real streaming platforms."""
+    return rng.choices([1, 2, 3], weights=[0.25, 0.55, 0.20], k=1)[0]
+
+
 def _run_adaptad_session(user, content, ads, chromosome, seed) -> list[dict]:
-    """Run AdaptAd policy and return decision records."""
+    """Run AdaptAd policy and return decision records with ad pods."""
     opportunities, _ = simulate_session(
         user=user, content=content, ad_pool=ads, seed=seed
     )
     records = []
     if not opportunities:
         return records
+    rng = random.Random(seed + 1)
     running_ctx = opportunities[0].session_context.model_copy()
     prev_minute = 0
     for opp in opportunities:
-        live_ctx = running_ctx.model_copy(update={"current_minute": opp.session_context.current_minute})
-        if should_force_suppress(live_ctx):
-            decision = AdDecision.SUPPRESS
-        else:
-            ua = score_user_advocate(user, opp.ad_candidate, live_ctx, chromosome)
-            adv = score_advertiser_advocate(user, opp.ad_candidate, live_ctx, chromosome)
-            result = negotiate(ua, adv, chromosome, user.id, opp.ad_candidate.id, "ab_adaptad")
-            decision = result.decision
-        minutes_gap = max(0, opp.session_context.current_minute - prev_minute)
-        running_ctx = apply_decision(running_ctx, user, decision, opp.session_context.current_minute, minutes_gap)
-        prev_minute = opp.session_context.current_minute
-        records.append({
-            "break_minute": opp.session_context.current_minute,
-            "ad_id": opp.ad_candidate.id,
-            "ad_category": opp.ad_candidate.category,
-            "decision": decision.value,
-        })
+        minute = opp.session_context.current_minute
+        minutes_gap = max(0, minute - prev_minute)
+        # Build pod: first ad is from the opportunity, extras are random picks
+        pod = [opp.ad_candidate] + [rng.choice(ads) for _ in range(_pod_size(rng) - 1)]
+        for ad_candidate in pod:
+            live_ctx = running_ctx.model_copy(update={"current_minute": minute})
+            if should_force_suppress(live_ctx):
+                decision = AdDecision.SUPPRESS
+            else:
+                ua = score_user_advocate(user, ad_candidate, live_ctx, chromosome)
+                adv = score_advertiser_advocate(user, ad_candidate, live_ctx, chromosome)
+                result = negotiate(ua, adv, chromosome, user.id, ad_candidate.id, "ab_adaptad")
+                decision = result.decision
+            running_ctx = apply_decision(running_ctx, user, decision, minute, minutes_gap)
+            minutes_gap = 0  # subsequent ads in pod have no gap
+            records.append({
+                "break_minute": minute,
+                "ad_id": ad_candidate.id,
+                "ad_category": ad_candidate.category,
+                "decision": decision.value,
+            })
+        prev_minute = minute
     return records
 
 
 def _run_random_session(user, content, ads, seed) -> list[dict]:
-    """Run random baseline and return decision records."""
+    """Run random baseline and return decision records with ad pods."""
     rng = random.Random(seed)
     opportunities, _ = simulate_session(
         user=user, content=content, ad_pool=ads, seed=seed
     )
     records = []
     for opp in opportunities:
-        decision = rng.choice([AdDecision.SHOW, AdDecision.SUPPRESS])
-        records.append({
-            "break_minute": opp.session_context.current_minute,
-            "ad_id": opp.ad_candidate.id,
-            "ad_category": opp.ad_candidate.category,
-            "decision": decision.value,
-        })
+        minute = opp.session_context.current_minute
+        pod = [opp.ad_candidate] + [rng.choice(ads) for _ in range(_pod_size(rng) - 1)]
+        for ad_candidate in pod:
+            decision = rng.choice([AdDecision.SHOW, AdDecision.SUPPRESS])
+            records.append({
+                "break_minute": minute,
+                "ad_id": ad_candidate.id,
+                "ad_category": ad_candidate.category,
+                "decision": decision.value,
+            })
     return records
 
 
