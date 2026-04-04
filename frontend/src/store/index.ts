@@ -51,9 +51,28 @@ export const useStore = create<AdaptAdStore>()(
         populationSize: 30,
         darkMode: true,
       },
-      updateSettings: (partial) =>
-        set((s) => ({ settings: { ...s.settings, ...partial } })),
+      updateSettings: (partial) => {
+        set((s) => ({ settings: { ...s.settings, ...partial } }))
+        if (partial.darkMode !== undefined) {
+          if (partial.darkMode) {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.remove('dark')
+          }
+        }
+      },
     }),
-    { name: 'adaptad-store' }
+    {
+      name: 'adaptad-store',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          if (state.settings.darkMode) {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.remove('dark')
+          }
+        }
+      },
+    }
   )
 )
