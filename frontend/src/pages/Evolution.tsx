@@ -121,7 +121,7 @@ function GeneTracker({ genes, prevGenes }: { genes: number[]; prevGenes: number[
                   </span>
                 </div>
               </div>
-              <div className="h-1.5 bg-[#1a2332] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-zinc-200 dark:bg-[#1a2332] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -325,7 +325,7 @@ export default function Evolution() {
         </div>
         <div className="card text-center">
           <p className="label mb-2">Generation</p>
-          <p className="font-mono text-2xl text-zinc-100">{currentGen}</p>
+          <p className="font-mono text-2xl text-zinc-800 dark:text-zinc-100">{currentGen}</p>
         </div>
         <div className={`card text-center transition-all duration-500 ${newBest ? 'border-[#00ff88]/60 shadow-glow-accent' : ''}`}>
           <p className="label mb-2">Best Fitness</p>
@@ -336,10 +336,10 @@ export default function Evolution() {
         <div className="card text-center">
           <p className="label mb-2">Diversity</p>
           <div className="flex flex-col items-center gap-1.5">
-            <p className={`font-mono text-2xl ${diversity < 0.2 ? 'text-[#ffb800]' : 'text-zinc-200'}`}>
+            <p className={`font-mono text-2xl ${diversity < 0.2 ? 'text-[#ffb800]' : 'text-zinc-700 dark:text-zinc-200'}`}>
               {(diversity * 100).toFixed(1)}%
             </p>
-            <div className="w-full h-1 bg-[#1a2332] rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-zinc-200 dark:bg-[#1a2332] rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${diversity * 100}%`, backgroundColor: diversity < 0.2 ? '#ffb800' : '#00d4ff' }} />
             </div>

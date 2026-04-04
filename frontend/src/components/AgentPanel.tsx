@@ -21,10 +21,10 @@ export default function AgentPanel({ score, side }: Props) {
     <div className={`card border ${borderColor}`}>
       <div className="flex items-center justify-between mb-3">
         <span className={`font-medium text-sm ${headerColor}`}>{score.agent_name}</span>
-        <span className="font-mono text-lg font-semibold text-slate-200">{score.score.toFixed(3)}</span>
+        <span className="font-mono text-lg font-semibold text-zinc-700 dark:text-slate-200">{score.score.toFixed(3)}</span>
       </div>
 
-      <div className="bg-slate-800 rounded-full h-1.5 mb-3">
+      <div className="rounded-full h-1.5 mb-3" style={{ backgroundColor: 'var(--border)' }}>
         <div
           className={`h-full rounded-full ${barColor} transition-all duration-700`}
           style={{ width: `${score.score * 100}%` }}

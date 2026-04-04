@@ -70,8 +70,8 @@ function ScaleRating({ value, onChange, readonly }: {
             n === value
               ? 'bg-sky-600 border-sky-500 text-white'
               : readonly
-              ? 'bg-slate-800 border-slate-700 text-slate-600 cursor-default'
-              : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-sky-500 hover:text-sky-300 cursor-pointer'
+              ? 'bg-zinc-100 dark:bg-slate-800 border-zinc-300 dark:border-slate-700 text-zinc-400 dark:text-slate-600 cursor-default'
+              : 'bg-zinc-100 dark:bg-slate-800 border-zinc-300 dark:border-slate-700 text-zinc-500 dark:text-slate-400 hover:border-sky-500 hover:text-sky-600 dark:hover:text-sky-300 cursor-pointer'
           }`}>{n}</button>
       ))}
     </div>
@@ -84,7 +84,7 @@ function ToggleChip({ label, active, onClick }: { label: string; active: boolean
       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
         active
           ? 'bg-sky-600/20 border-sky-500/50 text-sky-300'
-          : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'
+          : 'bg-zinc-100 dark:bg-slate-800 border-zinc-300 dark:border-slate-700 text-zinc-500 dark:text-slate-500 hover:border-zinc-500 dark:hover:border-slate-500 hover:text-zinc-700 dark:hover:text-slate-300'
       }`}>{label}</button>
   )
 }
@@ -163,7 +163,7 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
         {pods.length === 0
           ? <p className="text-xs text-slate-600">No ad breaks</p>
           : pods.map((pod, i) => (
-              <div key={i} className="rounded-lg border border-slate-700/50 bg-slate-800/30 px-3 py-2 space-y-1.5">
+              <div key={i} className="rounded-lg px-3 py-2 space-y-1.5" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-card-deep)' }}>
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                   {pod.minute}m — {pod.ads.length} ad{pod.ads.length > 1 ? 's' : ''}
                 </span>
@@ -282,7 +282,7 @@ export default function ABTesting() {
   }
   const aggregate = (results as Record<string, unknown> | null)?.aggregate as Record<string, unknown> | undefined
 
-  const inputCls = "w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-600"
+  const inputCls = "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-colors select-input"
 
   return (
     <div className="space-y-6">
@@ -399,7 +399,7 @@ export default function ABTesting() {
               <div className="space-y-1 sm:col-span-1">
                 <label className="label">Show or movie title</label>
                 <div className="flex gap-2">
-                  <input className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-600"
+                  <input className="flex-1 select-input"
                     placeholder="e.g. Stranger Things"
                     value={form.show_title}
                     onChange={e => { setForm(f => ({ ...f, show_title: e.target.value })); setShowDescription('') }} />
@@ -459,9 +459,9 @@ export default function ABTesting() {
       {session && (
         <>
           {/* Info banner */}
-          <div className="card bg-slate-800/60 border-slate-700/40">
-            <p className="text-sm text-slate-300 font-medium mb-1">Rate each session honestly.</p>
-            <p className="text-xs text-slate-500 leading-relaxed">
+          <div className="card">
+            <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Rate each session honestly.</p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               You do not know which system generated which schedule. Consider whether the ads feel
               disruptive and whether they fit you and what you're watching.
             </p>
@@ -476,8 +476,8 @@ export default function ABTesting() {
 
           {/* Rating guide */}
           {!submitted && (
-            <div className="card bg-slate-800/40 border-slate-700/30 text-xs text-slate-500">
-              <span className="text-slate-300 font-semibold">How to rate (1–10): </span>
+            <div className="card text-xs" style={{ color: 'var(--text-muted)' }}>
+              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>How to rate (1–10): </span>
               <span className="text-sky-400">Annoyance</span> — 1 = very annoying, 10 = barely noticeable ·{' '}
               <span className="text-sky-400">Relevance</span> — 1 = irrelevant to you, 10 = spot on ·{' '}
               <span className="text-sky-400">Would Continue</span> — 1 = would stop watching, 10 = definitely keep going
@@ -509,21 +509,21 @@ export default function ABTesting() {
               {winner === 'tie' && <p className="text-slate-300 font-bold text-lg">This round was a tie</p>}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-slate-800/60 rounded-xl px-4 py-3">
-                  <p className="text-xs text-sky-400 font-semibold mb-1">
-                    AdaptAd score: <span className="font-mono text-white">{adaptadScore > 0 ? '+' : ''}{adaptadScore} / 19</span>
+                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
+                  <p className="text-xs text-sky-500 font-semibold mb-1">
+                    AdaptAd score: <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{adaptadScore > 0 ? '+' : ''}{adaptadScore} / 19</span>
                   </p>
-                  <p className="text-xs text-slate-500">Uses your profile to decide when and whether to show each ad.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Uses your profile to decide when and whether to show each ad.</p>
                 </div>
-                <div className="bg-slate-800/60 rounded-xl px-4 py-3">
-                  <p className="text-xs text-slate-300 font-semibold mb-1">
-                    Random baseline score: <span className="font-mono text-white">{baselineScore > 0 ? '+' : ''}{baselineScore} / 19</span>
+                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                    Random baseline score: <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{baselineScore > 0 ? '+' : ''}{baselineScore} / 19</span>
                   </p>
-                  <p className="text-xs text-slate-500">No intelligence — randomly shows or suppresses with no context.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No intelligence — randomly shows or suppresses with no context.</p>
                 </div>
               </div>
 
-              <div className="bg-slate-800/40 rounded-xl px-4 py-3 text-xs text-slate-400">
+              <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: 'var(--bg-card-deep)', color: 'var(--text-muted)' }}>
                 Score = Willingness + Relevance − Annoyance &nbsp;·&nbsp; Range: −8 to +19 &nbsp;·&nbsp; Higher wins.
               </div>
 

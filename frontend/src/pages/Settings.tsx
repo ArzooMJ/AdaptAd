@@ -51,7 +51,7 @@ export default function Settings() {
           <span className="text-sm text-zinc-400">LLM Explanations</span>
           <button
             onClick={() => updateSettings({ llmEnabled: !settings.llmEnabled })}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.llmEnabled ? 'bg-violet-600' : 'bg-zinc-700'}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.llmEnabled ? 'bg-violet-600' : 'bg-zinc-300'}`}
           >
             <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm ${settings.llmEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
@@ -99,7 +99,7 @@ export default function Settings() {
           </div>
           <button
             onClick={() => updateSettings({ darkMode: !settings.darkMode })}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.darkMode ? 'bg-violet-600' : 'bg-zinc-700'}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.darkMode ? 'bg-[#00d4ff]' : 'bg-zinc-300'}`}
           >
             <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm ${settings.darkMode ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>

@@ -28,7 +28,7 @@ export default function SessionTimeline({ durationMinutes, decisions, currentMin
 
   return (
     <div>
-      <div className="relative h-8 bg-slate-800 rounded-full overflow-visible mb-6">
+      <div className="relative h-8 rounded-full overflow-visible mb-6" style={{ backgroundColor: 'var(--border)' }}>
         {currentMinute != null && (
           <div
             className="absolute top-0 left-0 h-full bg-sky-900/40 rounded-full transition-all duration-300"

@@ -16,7 +16,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-3.5 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 touch-manipulation ${
     isActive
       ? 'bg-[#00d4ff]/10 text-[#00d4ff] ring-1 ring-[#00d4ff]/30'
-      : 'text-zinc-500 hover:text-zinc-100 hover:bg-white/5 active:bg-white/10'
+      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10'
   }`
 
 export default function NavBar() {
@@ -59,7 +59,7 @@ export default function NavBar() {
 
           {/* Hamburger */}
           <button
-            className="md:hidden ml-auto p-2.5 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/5 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="md:hidden ml-auto p-2.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-black/5 dark:hover:bg-white/5 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle navigation"
           >
@@ -83,7 +83,7 @@ export default function NavBar() {
                 `block px-3.5 py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 touch-manipulation min-h-[44px] ${
                   isActive
                     ? 'bg-[#00d4ff]/10 text-[#00d4ff] ring-1 ring-[#00d4ff]/25'
-                    : 'text-zinc-500 hover:text-zinc-100 hover:bg-white/5'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-black/5 dark:hover:bg-white/5'
                 }`
               }
               onClick={() => setOpen(false)}

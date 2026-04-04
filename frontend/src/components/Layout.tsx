@@ -6,10 +6,10 @@ function StickPeople() {
   return (
     <div className="fixed bottom-4 right-4 z-50 flex items-end gap-2 select-none pointer-events-none">
       {/* Speech bubble */}
-      <div className="relative mb-6 bg-[#0d1117] border border-[#00d4ff]/30 text-[#00d4ff] text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg shadow-[#00d4ff]/10">
+      <div className="relative mb-6 border border-[#00d4ff]/30 text-[#00d4ff] text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg shadow-[#00d4ff]/10" style={{ backgroundColor: 'var(--bg-card)' }}>
         we built this!
         {/* Bubble tail pointing right-down */}
-        <span className="absolute -bottom-1.5 right-5 w-2.5 h-2.5 bg-[#0d1117] border-r border-b border-[#00d4ff]/30 rotate-45" />
+        <span className="absolute -bottom-1.5 right-5 w-2.5 h-2.5 border-r border-b border-[#00d4ff]/30 rotate-45" style={{ backgroundColor: 'var(--bg-card)' }} />
       </div>
 
       {/* Guy 1 */}

@@ -76,8 +76,8 @@ export default function ChromosomeViz({ genes, fitness }: Props) {
         return (
           <div key={name} className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-slate-300 w-36 shrink-0">{GENE_LABELS[name]}</span>
-              <div className="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
+              <span className="text-xs font-semibold text-zinc-600 dark:text-slate-300 w-36 shrink-0">{GENE_LABELS[name]}</span>
+              <div className="flex-1 rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
                 <div
                   className="h-full bg-sky-500 rounded-full transition-all duration-500"
                   style={{ width: `${val * 100}%` }}

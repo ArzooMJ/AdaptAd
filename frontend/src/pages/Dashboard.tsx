@@ -154,7 +154,7 @@ export default function Dashboard() {
     <div className="space-y-6 animate-fade-in">
 
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#00d4ff]/15 bg-[#0a0f16] p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-[#00d4ff]/15 p-6 sm:p-8" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
         {/* Decorative orbs */}
         <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-[#00d4ff]/8 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-[#00ff88]/6 blur-3xl pointer-events-none" />
@@ -192,7 +192,7 @@ export default function Dashboard() {
             {fitness != null ? 'Evolved · loaded' : 'Run evolution first'}
           </p>
           {fitness != null && (
-            <div className="mt-3 h-0.5 rounded-full bg-[#1a2332] overflow-hidden">
+            <div className="mt-3 h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
               <div className="h-full bg-gradient-to-r from-[#00d4ff] to-[#00ff88] rounded-full transition-all duration-1000"
                 style={{ width: `${Math.min(100, fitness * 100).toFixed(1)}%` }} />
             </div>
@@ -209,14 +209,14 @@ export default function Dashboard() {
         {/* Users */}
         <div className="card hover:border-[#1e3048] transition-all duration-300">
           <p className="label mb-3">Synthetic Users</p>
-          <p className="text-3xl font-bold font-mono text-zinc-200">{animUsers}</p>
+          <p className="text-3xl font-bold font-mono text-zinc-700 dark:text-zinc-200">{animUsers}</p>
           <p className="text-xs text-zinc-500 mt-2">12 countries · 7 age groups</p>
         </div>
 
         {/* Ads */}
         <div className="card hover:border-[#1e3048] transition-all duration-300">
           <p className="label mb-3">Ad Inventory</p>
-          <p className="text-3xl font-bold font-mono text-zinc-200">{animAds}</p>
+          <p className="text-3xl font-bold font-mono text-zinc-700 dark:text-zinc-200">{animAds}</p>
           <p className="text-xs text-zinc-500 mt-2">8 categories · seasonal</p>
         </div>
       </div>

@@ -161,10 +161,10 @@ export default function BatchResults() {
                         <span className="text-xs font-semibold text-zinc-400 tracking-wider">{name}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-20 h-1 bg-[#1a2332] rounded-full overflow-hidden">
+                        <div className="w-20 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
                           <div className="h-full rounded-full" style={{ width: `${(value/total)*100}%`, backgroundColor: DECISION_COLORS[name] }} />
                         </div>
-                        <span className="text-xs font-mono text-zinc-300 w-8 text-right">{value}</span>
+                        <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 w-8 text-right">{value}</span>
                         <span className="text-[10px] text-zinc-600 w-10">({((value/total)*100).toFixed(0)}%)</span>
                       </div>
                     </div>
@@ -217,7 +217,7 @@ export default function BatchResults() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                       filter === d
                         ? 'border-[#00d4ff]/50 text-[#00d4ff] bg-[#00d4ff]/10'
-                        : 'border-[#1a2332] text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                        : 'border-zinc-300 dark:border-[#1a2332] text-zinc-500 hover:border-zinc-500 dark:hover:border-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300'
                     }`}>
                     {d}
                   </button>
@@ -227,7 +227,7 @@ export default function BatchResults() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1a2332]">
+                  <tr className="border-b border-zinc-200 dark:border-[#1a2332]">
                     {['User', 'Age', 'Decision', 'Score'].map(h => (
                       <th key={h} className="pb-3 text-left text-[11px] text-zinc-500 font-semibold uppercase tracking-widest">{h}</th>
                     ))}
@@ -235,8 +235,8 @@ export default function BatchResults() {
                 </thead>
                 <tbody>
                   {filtered.slice(0, 50).map((r) => (
-                    <tr key={r.user_id} className="border-b border-[#0d1117] hover:bg-[#0d1f2d]/60 transition-colors">
-                      <td className="py-2.5 text-zinc-200 text-xs">{r.user_name}</td>
+                    <tr key={r.user_id} className="border-b border-zinc-100 dark:border-[#0d1117] hover:bg-zinc-50 dark:hover:bg-[#0d1f2d]/60 transition-colors">
+                      <td className="py-2.5 text-zinc-700 dark:text-zinc-200 text-xs">{r.user_name}</td>
                       <td className="py-2.5 text-zinc-500 text-xs font-mono">{r.age_group}</td>
                       <td className="py-2.5"><DecisionBadge decision={r.decision} size="sm" /></td>
                       <td className="py-2.5 font-mono text-xs">

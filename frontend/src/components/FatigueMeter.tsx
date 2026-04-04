@@ -15,9 +15,9 @@ export default function FatigueMeter({ value, label = 'Session Fatigue' }: Props
     <div className="card">
       <div className="flex justify-between mb-2">
         <span className="label">{label}</span>
-        <span className="text-xs font-mono text-slate-300">{(pct * 100).toFixed(0)}%</span>
+        <span className="text-xs font-mono text-zinc-600 dark:text-slate-300">{(pct * 100).toFixed(0)}%</span>
       </div>
-      <div className="bg-slate-800 rounded-full h-2 overflow-hidden">
+      <div className="rounded-full h-2 overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
         <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${pct * 100}%` }} />
       </div>
       {pct > 0.85 && <p className="text-xs text-suppress mt-1.5">Force suppress active</p>}

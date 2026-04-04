@@ -92,7 +92,7 @@ export default function SessionSimulator() {
               <div className="card">
                 <div className="flex items-start justify-between mb-4 gap-3">
                   <div>
-                    <p className="font-semibold text-zinc-100">{result.content_title}</p>
+                    <p className="font-semibold text-zinc-800 dark:text-zinc-100">{result.content_title}</p>
                     <p className="text-xs text-zinc-500">{result.content_duration_minutes}min</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -143,7 +143,7 @@ export default function SessionSimulator() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {Object.entries(result.summary.decision_counts).map(([d, count]) => (
                     <div key={d} className="text-center">
-                      <p className="text-xl font-bold font-mono text-zinc-100">{count}</p>
+                      <p className="text-xl font-bold font-mono text-zinc-800 dark:text-zinc-100">{count}</p>
                       <div className="mt-1"><DecisionBadge decision={d} size="sm" /></div>
                     </div>
                   ))}

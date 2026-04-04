@@ -101,7 +101,7 @@ export default function DecisionExplorer() {
                 </div>
                 <div className="text-right">
                   <p className="label mb-2">Combined Score</p>
-                  <p className="font-mono text-2xl font-bold text-zinc-100">{result.combined_score.toFixed(3)}</p>
+                  <p className="font-mono text-2xl font-bold text-zinc-800 dark:text-zinc-100">{result.combined_score.toFixed(3)}</p>
                 </div>
               </div>
               <AgentPanel score={result.user_advocate} side="user" />
