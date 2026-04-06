@@ -3,8 +3,10 @@ import { dataApi, simulateApi, type User, type ContentItem, type SimulationResul
 import DecisionBadge from '../components/DecisionBadge'
 import FatigueMeter from '../components/FatigueMeter'
 import SessionTimeline from '../components/SessionTimeline'
+import { useStore } from '../store'
 
 export default function SessionSimulator() {
+  const activeChromosomeGenes = useStore((s) => s.chromosomeGenes)
   const [users, setUsers] = useState<User[]>([])
   const [content, setContent] = useState<ContentItem[]>([])
   const [userId, setUserId] = useState(1)
@@ -39,6 +41,34 @@ export default function SessionSimulator() {
   }
 
   const selectedContent = content.find((c) => c.id === contentId)
+  const selectedUser = users.find((u) => u.id === userId)
+  const policyGenes = result?.chromosome_genes ?? activeChromosomeGenes
+
+  const fatigueSensitivity = policyGenes?.[0] ?? null
+  const relevanceSensitivity = policyGenes?.[1] ?? null
+  const delayBias = policyGenes?.[4] ?? null
+  const softenBias = policyGenes?.[5] ?? null
+
+  const splitAndNormalize = (items: string[]) =>
+    items
+      .flatMap((item) => item.split(/[,&/|]/g))
+      .map((token) => token.trim().toLowerCase())
+      .filter(Boolean)
+
+  const contentPreferenceTokens = splitAndNormalize(selectedUser?.content_preferences ?? [])
+  const selectedContentTokens = splitAndNormalize([selectedContent?.genre ?? ''])
+  const matchedGenres = selectedContentTokens.filter((token) => contentPreferenceTokens.includes(token))
+  const preferenceMatch = matchedGenres.length > 0
+
+  const topAdInterests = selectedUser?.interests?.slice(0, 3) ?? []
+  const topContentPreferences = selectedUser?.content_preferences?.slice(0, 4) ?? []
+
+  function levelLabel(value: number | null) {
+    if (value == null) return 'n/a'
+    if (value >= 0.67) return 'high'
+    if (value >= 0.34) return 'mid'
+    return 'low'
+  }
 
   return (
     <div className="space-y-6">
@@ -82,6 +112,75 @@ export default function SessionSimulator() {
           <button className="btn-primary w-full" onClick={runSimulation} disabled={loading}>
             {loading ? 'Simulating…' : 'Run Simulation'}
           </button>
+
+          <div className="rounded-xl border border-violet-900/30 bg-violet-950/10 p-4 sm:p-5 space-y-4">
+            <div>
+              <p className="label">Viewer Context</p>
+              <p className="text-xs text-zinc-500 mt-2 leading-relaxed">Explains why SHOW, DELAY, SOFTEN, or SUPPRESS can happen for this profile.</p>
+            </div>
+
+            <div className="space-y-2 text-xs text-zinc-400 leading-relaxed">
+              <p>
+                <span className="text-zinc-500">Profession:</span>{' '}
+                <span className="text-zinc-300">{selectedUser?.profession || '—'}</span>
+              </p>
+              <p>
+                <span className="text-zinc-500">Ad category interests:</span>{' '}
+                <span className="text-zinc-300">{topAdInterests.join(', ') || '—'}</span>
+              </p>
+              <p>
+                <span className="text-zinc-500">Preferred watch time:</span>{' '}
+                <span className="text-zinc-300">{selectedUser?.preferred_watch_time || '—'}</span>
+              </p>
+              <p>
+                <span className="text-zinc-500">Favorite content categories:</span>{' '}
+                <span className="text-zinc-300">{topContentPreferences.join(', ') || '—'}</span>
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-violet-900/20 space-y-2.5">
+              <p className="text-[11px] uppercase tracking-widest text-zinc-500">Policy Signals</p>
+              <div className="grid grid-cols-2 gap-2.5 text-xs">
+                <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
+                  <p className="text-zinc-500">Fatigue weight</p>
+                  <p className="font-mono text-zinc-300 mt-0.5">{fatigueSensitivity != null ? fatigueSensitivity.toFixed(2) : '—'} ({levelLabel(fatigueSensitivity)})</p>
+                </div>
+                <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
+                  <p className="text-zinc-500">Relevance weight</p>
+                  <p className="font-mono text-zinc-300 mt-0.5">{relevanceSensitivity != null ? relevanceSensitivity.toFixed(2) : '—'} ({levelLabel(relevanceSensitivity)})</p>
+                </div>
+                <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
+                  <p className="text-zinc-500">Delay bias</p>
+                  <p className="font-mono text-zinc-300 mt-0.5">{delayBias != null ? delayBias.toFixed(2) : '—'} ({levelLabel(delayBias)})</p>
+                </div>
+                <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
+                  <p className="text-zinc-500">Soften bias</p>
+                  <p className="font-mono text-zinc-300 mt-0.5">{softenBias != null ? softenBias.toFixed(2) : '—'} ({levelLabel(softenBias)})</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-violet-900/20 text-xs text-zinc-400 space-y-1.5 leading-relaxed">
+              <p>
+                Current context: {time} in {season}
+                {selectedUser?.preferred_watch_time ? `, viewer prefers ${selectedUser.preferred_watch_time}` : ''}.
+              </p>
+              <p>
+                Content match: {selectedContent?.genre || '—'}
+                {selectedUser && selectedContent
+                  ? (preferenceMatch
+                    ? ` matches preferred category: ${matchedGenres[0]}.`
+                    : ' is outside preferred categories.')
+                  : '.'}
+              </p>
+              <p>
+                {selectedUser && selectedUser.ad_tolerance < 0.4
+                  ? 'Low ad tolerance profile: expect more DELAY/SUPPRESS as fatigue rises.'
+                  : 'Moderate/high ad tolerance profile: policy can allow more SHOW/SOFTEN if relevance is strong.'}
+              </p>
+            </div>
+          </div>
+
           {error && <p className="text-suppress text-sm">{error}</p>}
         </div>
 
