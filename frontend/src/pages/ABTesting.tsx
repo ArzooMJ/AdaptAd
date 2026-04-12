@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { abApi } from '../api/client'
 import DecisionBadge from '../components/DecisionBadge'
 
@@ -32,6 +32,13 @@ interface Session {
   session_context?: SessionContext
 }
 interface Rating { annoyance: number; relevance: number; willingness: number }
+interface HistoryEntry {
+  session_id: string; user_name: string; user_age_group: string
+  content_title: string; content_genre: string; is_custom: boolean; created_at: string
+  adaptad_score: number | null; baseline_score: number | null; winner: string
+  adaptad_ratings: { annoyance: number | null; relevance: number | null; willingness: number | null }
+  baseline_ratings: { annoyance: number | null; relevance: number | null; willingness: number | null }
+}
 
 const EMPTY_FORM = {
   person_name: '',
@@ -206,6 +213,17 @@ export default function ABTesting() {
   const [results, setResults] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [historyOpen, setHistoryOpen] = useState(false)
+
+  async function refreshHistory() {
+    try {
+      const r = (await abApi.history()).data as { sessions: HistoryEntry[] }
+      setHistory(r.sessions || [])
+    } catch { /* silently ignore — DB may not have entries yet */ }
+  }
+
+  useEffect(() => { refreshHistory() }, [])
 
   function resetSession() {
     setSession(null); setSubmitted(false); setResults(null); setError(null)
@@ -266,6 +284,7 @@ export default function ABTesting() {
       await abApi.rate(session.session_id, { session_label: 'Y', ...yRating })
       setResults((await abApi.results()).data)
       setSubmitted(true)
+      refreshHistory()
     } catch { setError('Failed to submit ratings.') }
     finally { setLoading(false) }
   }
@@ -540,6 +559,67 @@ export default function ABTesting() {
           )}
         </>
       )}
+
+      {/* ── SAVED HISTORY ─────────────────────────────────────────────────── */}
+      <div className="card space-y-3">
+        <button
+          className="w-full flex items-center justify-between text-left"
+          onClick={() => { setHistoryOpen(h => !h); if (!historyOpen) refreshHistory() }}
+        >
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            Saved Tests ({history.length})
+          </span>
+          <span className="text-xs text-slate-500">{historyOpen ? '▲ hide' : '▼ show'}</span>
+        </button>
+
+        {historyOpen && (
+          history.length === 0
+            ? <p className="text-xs text-slate-600 py-2">No completed tests saved yet.</p>
+            : <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-700/40 text-left text-[10px] uppercase tracking-widest text-slate-500">
+                      <th className="pb-2 pr-4">Participant</th>
+                      <th className="pb-2 pr-4">Content</th>
+                      <th className="pb-2 pr-4">AdaptAd</th>
+                      <th className="pb-2 pr-4">Baseline</th>
+                      <th className="pb-2 pr-4">Winner</th>
+                      <th className="pb-2">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map(h => (
+                      <tr key={h.session_id} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition-colors">
+                        <td className="py-2 pr-4 font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {h.user_name}
+                          {h.user_age_group && <span className="text-slate-600 ml-1">({h.user_age_group})</span>}
+                        </td>
+                        <td className="py-2 pr-4 text-slate-400">
+                          {h.content_title}
+                          {h.content_genre && <span className="text-slate-600 ml-1">· {h.content_genre}</span>}
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-sky-400">
+                          {h.adaptad_score !== null ? (h.adaptad_score > 0 ? '+' : '') + h.adaptad_score : '—'}
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-slate-400">
+                          {h.baseline_score !== null ? (h.baseline_score > 0 ? '+' : '') + h.baseline_score : '—'}
+                        </td>
+                        <td className="py-2 pr-4">
+                          {h.winner === 'adaptad' && <span className="text-sky-400 font-semibold">AdaptAd</span>}
+                          {h.winner === 'baseline' && <span className="text-red-400 font-semibold">Baseline</span>}
+                          {h.winner === 'tie' && <span className="text-slate-400">Tie</span>}
+                          {h.winner === 'unknown' && <span className="text-slate-600">—</span>}
+                        </td>
+                        <td className="py-2 text-slate-600">
+                          {new Date(h.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -25,6 +25,7 @@ from ..data.content_library import GENRE_MOODS, _generate_intensity_curve, _natu
 from .routes_data import get_ads, get_content, get_users
 from .routes_decide import get_chromosome
 from ..agents.llm_reasoning import lookup_show_metadata
+from ..db.database import save_ab_session_sync, save_ab_rating_sync, get_ab_history_sync
 
 router = APIRouter(prefix="/api/ab", tags=["ab"])
 
@@ -261,6 +262,8 @@ def start_ab_session(req: ABStartRequest):
         "completed": False,
     }
 
+    save_ab_session_sync(_ab_sessions[session_id])
+
     return {
         "session_id": session_id,
         "user_name": user.name,
@@ -297,6 +300,16 @@ def submit_rating(session_id: str, req: ABRatingRequest):
 
     if "X" in session["ratings"] and "Y" in session["ratings"]:
         session["completed"] = True
+
+    save_ab_rating_sync(
+        session_id=session_id,
+        label=req.session_label,
+        x_is_adaptad=session["x_is_adaptad"],
+        annoyance=req.annoyance,
+        relevance=req.relevance,
+        willingness=req.willingness,
+        notes=req.notes,
+    )
 
     return {"status": "recorded", "session_id": session_id}
 
@@ -480,6 +493,8 @@ def start_custom_ab_session(req: CustomABRequest):
         "is_custom": True,
     }
 
+    save_ab_session_sync(_ab_sessions[session_id])
+
     return {
         "session_id": session_id,
         "user_name": user.name,
@@ -490,6 +505,12 @@ def start_custom_ab_session(req: CustomABRequest):
         "session_x": session_x_records,
         "session_y": session_y_records,
     }
+
+
+@router.get("/history")
+def get_history(limit: int = 100):
+    """Return all completed A/B sessions from persistent storage."""
+    return {"sessions": get_ab_history_sync(limit=limit)}
 
 
 @router.get("/{session_id}")

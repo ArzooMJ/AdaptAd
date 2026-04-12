@@ -1,0 +1,25 @@
+{
+  "genes": [
+    0.0611,
+    0.8502,
+    0.6757,
+    0.262,
+    0.846,
+    0.1709,
+    0.4227,
+    0.4781
+  ],
+  "fitness": 0.5233,
+  "gene_names": [
+    "fatigue_weight",
+    "relevance_weight",
+    "timing_weight",
+    "frequency_threshold",
+    "delay_probability",
+    "soften_threshold",
+    "category_boost",
+    "session_depth_factor"
+  ],
+  "saved_at": "2026-04-12T19:02:09.927915",
+  "label": "experiment_best"
+}

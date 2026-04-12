@@ -203,10 +203,9 @@ export default function Evolution() {
       setDiversity(d.diversity)
       setStatus('running')
 
-      // Gene tracking
+      // Gene tracking — functional update avoids stale closure on liveGenes
       if (d.best_chromosome) {
-        setPrevGenes(liveGenes)
-        setLiveGenes(d.best_chromosome)
+        setLiveGenes(prev => { setPrevGenes(prev); return d.best_chromosome! })
       }
 
       // New best detection
@@ -244,7 +243,7 @@ export default function Evolution() {
       setError(msg.data.message)
       setStatus('error')
     }
-  }, [setChromosome, liveGenes])
+  }, [setChromosome])
 
   useWebSocket(activeJobId, { onMessage: handleMessage })
 

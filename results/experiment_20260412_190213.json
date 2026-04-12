@@ -1,0 +1,288 @@
+{
+  "experiment_date": "2026-04-12T19:02:13.205287",
+  "num_runs": 2,
+  "max_generations": 2,
+  "num_users": 20,
+  "elapsed_seconds": 3.36,
+  "baselines": {
+    "always_show": {
+      "satisfaction": 0.3458,
+      "revenue": 0.7897,
+      "fatigue": 0.2741,
+      "fitness": 0.5233,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 121,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 0
+      }
+    },
+    "random": {
+      "satisfaction": 0.4926,
+      "revenue": 0.4012,
+      "fatigue": 0.2601,
+      "fitness": 0.4561,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 61,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 60
+      }
+    },
+    "frequency_cap": {
+      "satisfaction": 0.4846,
+      "revenue": 0.3679,
+      "fatigue": 0.2601,
+      "fitness": 0.438,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 55,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 66
+      }
+    }
+  },
+  "evolved": {
+    "fitnesses": [
+      0.5233,
+      0.5233
+    ],
+    "mean_fitness": 0.5233,
+    "mean_satisfaction": 0.3458,
+    "mean_revenue": 0.7897,
+    "mean_fatigue": 0.2741,
+    "mean_diversity": 0.0,
+    "best_chromosome": [
+      0.0611,
+      0.8502,
+      0.6757,
+      0.262,
+      0.846,
+      0.1709,
+      0.4227,
+      0.4781
+    ]
+  },
+  "ablations": {
+    "full_system": {
+      "satisfaction": 0.4162,
+      "revenue": 0.6674,
+      "fatigue": 0.2581,
+      "fitness": 0.5167,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 56,
+        "SOFTEN": 51,
+        "DELAY": 14,
+        "SUPPRESS": 0
+      }
+    },
+    "ga_only": {
+      "satisfaction": 0.3747,
+      "revenue": 0.7256,
+      "fatigue": 0.2601,
+      "fitness": 0.5151,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 65,
+        "SOFTEN": 56,
+        "DELAY": 0,
+        "SUPPRESS": 0
+      }
+    },
+    "agents_no_ga": {
+      "satisfaction": 0.4162,
+      "revenue": 0.6674,
+      "fatigue": 0.2581,
+      "fitness": 0.5167,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 56,
+        "SOFTEN": 51,
+        "DELAY": 14,
+        "SUPPRESS": 0
+      }
+    },
+    "user_advocate_only": {
+      "satisfaction": 0.5901,
+      "revenue": 0.2975,
+      "fatigue": 0.2551,
+      "fitness": 0.4731,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 9,
+        "SOFTEN": 32,
+        "DELAY": 60,
+        "SUPPRESS": 20
+      }
+    },
+    "advertiser_advocate_only": {
+      "satisfaction": 0.3462,
+      "revenue": 0.7884,
+      "fatigue": 0.2741,
+      "fitness": 0.5231,
+      "total_decisions": 121,
+      "decision_counts": {
+        "SHOW": 120,
+        "SOFTEN": 1,
+        "DELAY": 0,
+        "SUPPRESS": 0
+      }
+    }
+  },
+  "h1": {
+    "passes": false,
+    "threshold": 0.65,
+    "mean": 0.5233,
+    "std": 0.0,
+    "n_runs": 2,
+    "baseline_comparisons": {
+      "always_show": {
+        "baseline_fitness": 0.5233,
+        "prop_runs_better": 0.0,
+        "mean_delta": 0.0
+      },
+      "random": {
+        "baseline_fitness": 0.4561,
+        "prop_runs_better": 1.0,
+        "mean_delta": 0.0672
+      },
+      "frequency_cap": {
+        "baseline_fitness": 0.438,
+        "prop_runs_better": 1.0,
+        "mean_delta": 0.0853
+      }
+    }
+  },
+  "h2": {
+    "fatigue_passes": true,
+    "relevance_passes": false,
+    "fatigue_threshold": 0.4,
+    "relevance_threshold": 0.7,
+    "mean_fatigue": 0.2741,
+    "mean_satisfaction": 0.3458,
+    "prop_runs_fatigue_pass": 1.0,
+    "prop_runs_relevance_pass": 0.0
+  },
+  "h3": {
+    "passes": false,
+    "threshold": 0.15,
+    "mean": 0.0,
+    "std": 0.0,
+    "prop_runs_pass": 0.0,
+    "n_runs": 2
+  },
+  "statistical_tests": {
+    "h1_one_sample": {
+      "statistic": null,
+      "p_value": 1.0,
+      "method": "insufficient_data"
+    },
+    "h1_pvalue": 1.0,
+    "h1_significant": false,
+    "pairwise_vs_baselines": {
+      "vs_always_show": {
+        "statistic": null,
+        "p_value": 1.0,
+        "method": "insufficient_data",
+        "holm_bonferroni_reject": false
+      },
+      "vs_random": {
+        "statistic": null,
+        "p_value": 1.0,
+        "method": "insufficient_data",
+        "holm_bonferroni_reject": false
+      },
+      "vs_frequency_cap": {
+        "statistic": null,
+        "p_value": 1.0,
+        "method": "insufficient_data",
+        "holm_bonferroni_reject": false
+      }
+    },
+    "method_note": "Wilcoxon signed-rank used when scipy available. Sign test fallback otherwise. Holm-Bonferroni applied to multiple comparisons."
+  },
+  "generation_histories": [
+    {
+      "run": 0,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.49853,
+          "avg_fitness": 0.453912,
+          "diversity": 0.8358,
+          "converged": false,
+          "best_chromosome": [
+            0.1079,
+            0.3094,
+            0.9449,
+            0.0175,
+            0.6362,
+            0.2923,
+            1.0,
+            0.6033
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.504272,
+          "avg_fitness": 0.473698,
+          "diversity": 0.6361,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.6757,
+            0.262,
+            0.846,
+            0.1709,
+            0.4227,
+            0.4781
+          ]
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.518778,
+          "avg_fitness": 0.4632,
+          "diversity": 0.8641,
+          "converged": false,
+          "best_chromosome": [
+            0.0763,
+            1.0,
+            0.4153,
+            0.1365,
+            0.9643,
+            0.2538,
+            0.9338,
+            0.6715
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.518778,
+          "avg_fitness": 0.479189,
+          "diversity": 0.5162,
+          "converged": false,
+          "best_chromosome": [
+            0.0763,
+            1.0,
+            0.4153,
+            0.1365,
+            0.9643,
+            0.2538,
+            0.9338,
+            0.6715
+          ]
+        }
+      ]
+    }
+  ]
+}

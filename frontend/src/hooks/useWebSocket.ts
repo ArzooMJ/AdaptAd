@@ -13,7 +13,11 @@ interface Options {
 }
 
 export function useWebSocket(jobId: string | null, options: Options = {}) {
-  const { onMessage, autoReconnect = true, reconnectDelayMs = 3000 } = options
+  const { autoReconnect = true, reconnectDelayMs = 3000 } = options
+  // Use a ref so the latest callback is always available without causing reconnects
+  const onMessageRef = useRef(options.onMessage)
+  useEffect(() => { onMessageRef.current = options.onMessage })
+
   const wsRef = useRef<WebSocket | null>(null)
   const [connected, setConnected] = useState(false)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -36,13 +40,13 @@ export function useWebSocket(jobId: string | null, options: Options = {}) {
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data) as WsMessage
-        onMessage?.(msg)
+        onMessageRef.current?.(msg)
         if (msg.type === 'converged' || msg.type === 'stopped') {
           stoppedRef.current = true
         }
       } catch { /* ignore malformed messages */ }
     }
-  }, [jobId, autoReconnect, reconnectDelayMs, onMessage])
+  }, [jobId, autoReconnect, reconnectDelayMs])
 
   const send = useCallback((msg: object) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
