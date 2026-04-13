@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { abApi } from '../api/client'
 import DecisionBadge from '../components/DecisionBadge'
+import { useStore } from '../store'
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const AD_CATEGORIES = ['tech', 'food', 'auto', 'fashion', 'finance', 'travel', 'health', 'gaming']
@@ -201,15 +202,21 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 export default function ABTesting() {
+  const {
+    abSession: session, abXRating: xRating, abYRating: yRating, abSubmitted: submitted,
+    setAbSession, setAbXRating, setAbYRating, setAbSubmitted, clearAbTest,
+  } = useStore()
+
+  const setSession = setAbSession as (s: Session | null) => void
+  const setXRating = (r: Rating) => setAbXRating(r)
+  const setYRating = (r: Rating) => setAbYRating(r)
+  const setSubmitted = setAbSubmitted
+
   const [form, setForm] = useState(EMPTY_FORM)
   const [durationStr, setDurationStr] = useState('45')
   const [lookupLoading, setLookupLoading] = useState(false)
   const [showDescription, setShowDescription] = useState('')
 
-  const [session, setSession] = useState<Session | null>(null)
-  const [xRating, setXRating] = useState<Rating>({ annoyance: 0, relevance: 0, willingness: 0 })
-  const [yRating, setYRating] = useState<Rating>({ annoyance: 0, relevance: 0, willingness: 0 })
-  const [submitted, setSubmitted] = useState(false)
   const [results, setResults] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -226,13 +233,11 @@ export default function ABTesting() {
   useEffect(() => { refreshHistory() }, [])
 
   function resetSession() {
-    setSession(null); setSubmitted(false); setResults(null); setError(null)
-    setXRating({ annoyance: 0, relevance: 0, willingness: 0 })
-    setYRating({ annoyance: 0, relevance: 0, willingness: 0 })
+    clearAbTest(); setResults(null); setError(null)
   }
 
   function resetAll() {
-    resetSession()
+    clearAbTest(); setResults(null); setError(null)
     setForm(EMPTY_FORM); setDurationStr('45'); setShowDescription('')
   }
 
@@ -506,9 +511,9 @@ export default function ABTesting() {
           {/* Two session cards */}
           <div className="flex flex-col sm:flex-row gap-4">
             <SessionCard label="X" breaks={session.session_x as Break[]} rating={xRating}
-              onRate={(f, v) => setXRating(r => ({ ...r, [f]: v }))} readonly={submitted} />
+              onRate={(f, v) => setXRating({ ...xRating, [f]: v })} readonly={submitted} />
             <SessionCard label="Y" breaks={session.session_y as Break[]} rating={yRating}
-              onRate={(f, v) => setYRating(r => ({ ...r, [f]: v }))} readonly={submitted} />
+              onRate={(f, v) => setYRating({ ...yRating, [f]: v })} readonly={submitted} />
           </div>
 
           {!submitted && (

@@ -9,6 +9,24 @@ interface Settings {
   darkMode: boolean
 }
 
+interface ABSession {
+  session_id: string
+  user_name: string
+  content_title: string
+  session_x: unknown[]
+  session_y: unknown[]
+  x_is_adaptad?: boolean
+  user_profile?: unknown
+  content_profile?: unknown
+  session_context?: unknown
+}
+
+interface ABRating {
+  annoyance: number
+  relevance: number
+  willingness: number
+}
+
 interface AdaptAdStore {
   // Active chromosome
   chromosomeGenes: number[] | null
@@ -27,6 +45,17 @@ interface AdaptAdStore {
   // Total decisions made this session
   totalDecisions: number
   incrementDecisions: () => void
+
+  // A/B test state (persisted across reloads)
+  abSession: ABSession | null
+  abXRating: ABRating
+  abYRating: ABRating
+  abSubmitted: boolean
+  setAbSession: (s: ABSession | null) => void
+  setAbXRating: (r: ABRating) => void
+  setAbYRating: (r: ABRating) => void
+  setAbSubmitted: (v: boolean) => void
+  clearAbTest: () => void
 }
 
 export const useStore = create<AdaptAdStore>()(
@@ -43,6 +72,21 @@ export const useStore = create<AdaptAdStore>()(
 
       totalDecisions: 0,
       incrementDecisions: () => set((s) => ({ totalDecisions: s.totalDecisions + 1 })),
+
+      abSession: null,
+      abXRating: { annoyance: 0, relevance: 0, willingness: 0 },
+      abYRating: { annoyance: 0, relevance: 0, willingness: 0 },
+      abSubmitted: false,
+      setAbSession: (s) => set({ abSession: s }),
+      setAbXRating: (r) => set({ abXRating: r }),
+      setAbYRating: (r) => set({ abYRating: r }),
+      setAbSubmitted: (v) => set({ abSubmitted: v }),
+      clearAbTest: () => set({
+        abSession: null,
+        abXRating: { annoyance: 0, relevance: 0, willingness: 0 },
+        abYRating: { annoyance: 0, relevance: 0, willingness: 0 },
+        abSubmitted: false,
+      }),
 
       settings: {
         llmEnabled: false,
