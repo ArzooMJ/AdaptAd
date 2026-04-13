@@ -117,7 +117,7 @@ export default function SessionSimulator() {
           <div className="rounded-xl border border-violet-900/30 bg-violet-950/10 p-4 sm:p-5 space-y-4">
             <div>
               <p className="label">Viewer Context</p>
-              <p className="text-xs text-zinc-500 mt-2 leading-relaxed">Explains why SHOW, DELAY, SOFTEN, or SUPPRESS can happen for this profile.</p>
+              <p className="text-xs text-zinc-500 mt-2 leading-relaxed">Explains why SHOW, SWAP, or SUPPRESS can happen for this profile.</p>
             </div>
 
             <div className="space-y-2 text-xs text-zinc-400 leading-relaxed">
@@ -151,11 +151,11 @@ export default function SessionSimulator() {
                   <p className="font-mono text-zinc-300 mt-0.5">{relevanceSensitivity != null ? relevanceSensitivity.toFixed(2) : '—'} ({levelLabel(relevanceSensitivity)})</p>
                 </div>
                 <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
-                  <p className="text-zinc-500">Delay bias</p>
+                  <p className="text-zinc-500">Swap aggressiveness</p>
                   <p className="font-mono text-zinc-300 mt-0.5">{delayBias != null ? delayBias.toFixed(2) : '—'} ({levelLabel(delayBias)})</p>
                 </div>
                 <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
-                  <p className="text-zinc-500">Soften bias</p>
+                  <p className="text-zinc-500">Swap zone width</p>
                   <p className="font-mono text-zinc-300 mt-0.5">{softenBias != null ? softenBias.toFixed(2) : '—'} ({levelLabel(softenBias)})</p>
                 </div>
               </div>
@@ -176,8 +176,8 @@ export default function SessionSimulator() {
               </p>
               <p>
                 {selectedUser && selectedUser.ad_tolerance < 0.4
-                  ? 'Low ad tolerance profile: expect more DELAY/SUPPRESS as fatigue rises.'
-                  : 'Moderate/high ad tolerance profile: policy can allow more SHOW/SOFTEN if relevance is strong.'}
+                  ? 'Low ad tolerance profile: expect more SUPPRESS as fatigue rises.'
+                  : 'Moderate/high ad tolerance profile: policy can allow more SHOW/SWAP if relevance is strong.'}
               </p>
             </div>
           </div>

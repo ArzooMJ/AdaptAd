@@ -37,8 +37,7 @@ class FatigueConfig:
     # Values chosen to reflect relative intrusiveness of each decision.
     # SHOW is fully intrusive, SUPPRESS has zero impact.
     show_increment: float = 0.10
-    soften_increment: float = 0.05
-    delay_increment: float = 0.02
+    swap_increment: float = 0.07    # Slightly less than SHOW — swapped ad is more relevant
     suppress_increment: float = 0.00
     # Reward ad-free viewing with mild fatigue recovery.
     decay_per_minute: float = 0.01

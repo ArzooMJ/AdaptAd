@@ -10,7 +10,7 @@ const AGE_GROUPS = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+']
 const WATCH_TIMES = ['morning', 'afternoon', 'evening', 'latenight']
 
 // ── types ─────────────────────────────────────────────────────────────────────
-interface Break { break_minute: number; ad_category: string; decision: string }
+interface Break { break_minute: number; ad_category: string; decision: string; original_category?: string }
 interface UserProfile {
   name: string; age_group: string; profession: string
   interests: string[]; content_preferences: string[]
@@ -179,7 +179,10 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
                   <div key={j} className="flex items-center gap-2 pl-1">
                     <span className="text-slate-600 text-xs w-3">{j + 1}.</span>
                     <DecisionBadge decision={b.decision} size="sm" />
-                    <span className="text-slate-500 text-xs">{b.ad_category}</span>
+                    {b.decision === 'SWAP' && b.original_category
+                      ? <span className="text-slate-500 text-xs"><span className="line-through opacity-50">{b.original_category}</span> → {b.ad_category}</span>
+                      : <span className="text-slate-500 text-xs">{b.ad_category}</span>
+                    }
                   </div>
                 ))}
               </div>

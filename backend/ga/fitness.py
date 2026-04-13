@@ -45,11 +45,11 @@ def _sat_rev(
             sat, rev = 0.25 + tol_boost, 0.65
         else:
             sat, rev = 0.12 + tol_boost, 0.45
-    elif decision == AdDecision.SOFTEN:
-        sat = (0.58 if relevant else 0.32) + tol_boost * 0.5
-        rev = 0.52
-    elif decision == AdDecision.DELAY:
-        sat, rev = 0.65, 0.12
+    elif decision == AdDecision.SWAP:
+        # System replaces the scheduled ad with the most relevant one for this user.
+        # Satisfaction is better than a random irrelevant SHOW; revenue is solid.
+        sat = 0.63 + tol_boost * 0.5
+        rev = 0.72
     else:  # SUPPRESS
         sat, rev = 0.72, 0.02
 
@@ -99,9 +99,8 @@ def evaluate_chromosome_fitness(
     season_indices  = rng.integers(0, 4, size=N)
 
     # Precompute per-chromosome thresholds — same formula as negotiator.py
-    show_thresh   = ag_cfg.base_show_threshold + chromosome.frequency_threshold * ag_cfg.show_threshold_scale
-    soften_thresh = show_thresh   - (0.08 + chromosome.soften_threshold  * 0.14)
-    delay_thresh  = soften_thresh - (0.10 + chromosome.delay_probability * 0.10)
+    show_thresh = ag_cfg.base_show_threshold + chromosome.frequency_threshold * ag_cfg.show_threshold_scale
+    swap_thresh = show_thresh - (0.08 + chromosome.soften_threshold * 0.14)
 
     total_sat = 0.0
     total_rev = 0.0
@@ -139,10 +138,8 @@ def evaluate_chromosome_fitness(
 
         if combined >= show_thresh:
             decision = AdDecision.SHOW
-        elif combined >= soften_thresh:
-            decision = AdDecision.SOFTEN
-        elif combined >= delay_thresh:
-            decision = AdDecision.DELAY
+        elif combined >= swap_thresh:
+            decision = AdDecision.SWAP
         else:
             decision = AdDecision.SUPPRESS
 

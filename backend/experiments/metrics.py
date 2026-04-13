@@ -20,7 +20,7 @@ def compute_diversity_index(decision_counts: dict[str, int]) -> float:
     total = sum(decision_counts.values())
     if total == 0:
         return 0.0
-    max_entropy = math.log2(4)  # 4 decision types.
+    max_entropy = math.log2(3)  # 3 decision types: SHOW, SWAP, SUPPRESS.
     entropy = 0.0
     for count in decision_counts.values():
         if count > 0:
@@ -104,7 +104,7 @@ def compute_h3(evolved_diversities: list[float], diversity_threshold: float = 0.
     """
     H3: Mean strategy diversity index > 0.15.
 
-    Diversity index is normalized Shannon entropy over SHOW/SOFTEN/DELAY/SUPPRESS.
+    Diversity index is normalized Shannon entropy over SHOW/SWAP/SUPPRESS.
     """
     if not evolved_diversities:
         return {"passes": False, "mean": 0.0, "threshold": diversity_threshold}

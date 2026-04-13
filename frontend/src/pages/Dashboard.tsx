@@ -26,11 +26,10 @@ const TICKER_USERS  = ['Priya S.', 'Lucas M.', 'Yuki T.', 'Emeka O.', 'Sofia G.'
 const TICKER_ADS    = ['tech', 'food', 'gaming', 'travel', 'fashion', 'health', 'finance', 'auto']
 const TICKER_DECISIONS = [
   { label: 'SHOW',     color: 'text-show',     bg: 'bg-show/10 border-show/30' },
-  { label: 'SOFTEN',   color: 'text-soften',   bg: 'bg-soften/10 border-soften/30' },
-  { label: 'DELAY',    color: 'text-delay',    bg: 'bg-delay/10 border-delay/30' },
+  { label: 'SWAP',     color: 'text-swap',     bg: 'bg-swap/10 border-swap/30' },
   { label: 'SUPPRESS', color: 'text-suppress', bg: 'bg-suppress/10 border-suppress/30' },
 ]
-const TICKER_WEIGHTS = [0.40, 0.25, 0.15, 0.20]
+const TICKER_WEIGHTS = [0.45, 0.30, 0.25]
 
 function pickWeighted() {
   const r = Math.random()

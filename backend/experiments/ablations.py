@@ -49,14 +49,11 @@ def _ga_only_policy(chromosome: Chromosome):
         # Equal weighting instead of the tuned 0.55/0.45 split.
         combined = (ua.score + adv.score) / 2.0
         show_thresh = 0.45 + chromosome.frequency_threshold * 0.35
-        soften_thresh = show_thresh - 0.15
-        delay_thresh = soften_thresh - 0.15
+        swap_thresh = show_thresh - (0.08 + chromosome.soften_threshold * 0.14)
         if combined >= show_thresh:
             return AdDecision.SHOW
-        elif combined >= soften_thresh:
-            return AdDecision.SOFTEN
-        elif combined >= delay_thresh:
-            return AdDecision.DELAY
+        elif combined >= swap_thresh:
+            return AdDecision.SWAP
         return AdDecision.SUPPRESS
 
     return policy

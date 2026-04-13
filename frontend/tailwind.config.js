@@ -19,8 +19,7 @@ export default {
           dim:     '#00c466',
         },
         show:     { DEFAULT: '#00ff88', light: '#b3ffe0', dark: '#00994d' },
-        soften:   { DEFAULT: '#ffb800', light: '#fff0b3', dark: '#cc9300' },
-        delay:    { DEFAULT: '#ff6b00', light: '#ffd9b3', dark: '#cc5500' },
+        swap:     { DEFAULT: '#38bdf8', light: '#bae6fd', dark: '#0284c7' },
         suppress: { DEFAULT: '#ff2d55', light: '#ffb3c0', dark: '#cc0033' },
       },
       boxShadow: {

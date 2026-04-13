@@ -36,14 +36,14 @@ const GENE_DESCRIPTIONS: Record<string, { what: string; high: string; low: strin
     low: 'Looser gate — more ads are shown.',
   },
   delay_probability: {
-    what: 'Width of the DELAY zone just below the show threshold.',
-    high: 'Prefers delaying marginal ads rather than suppressing them.',
-    low: 'Borderline ads are suppressed instead of delayed.',
+    what: 'How aggressively the system seeks a better ad when conditions are marginal.',
+    high: 'More likely to attempt a swap before falling back to suppress.',
+    low: 'Marginal opportunities are suppressed rather than swapped.',
   },
   soften_threshold: {
-    what: 'Width of the SOFTEN zone — how often a full ad is shortened instead.',
-    high: 'Prefers showing a shorter ad over skipping entirely.',
-    low: 'Ads are either shown in full or skipped — rarely softened.',
+    what: 'Width of the SWAP zone — how often an irrelevant ad is replaced with a better one.',
+    high: 'Wide swap zone — system frequently replaces poorly-matched ads.',
+    low: 'Narrow swap zone — only near-show-quality opportunities trigger a swap.',
   },
   category_boost: {
     what: 'How much advertiser value is amplified when the ad category matches the user.',

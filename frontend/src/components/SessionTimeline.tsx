@@ -17,9 +17,8 @@ interface Props {
 }
 
 const decisionDotColor: Record<string, string> = {
-  SHOW: 'bg-show border-show',
-  SOFTEN: 'bg-soften border-soften',
-  DELAY: 'bg-delay border-delay',
+  SHOW:     'bg-show border-show',
+  SWAP:     'bg-swap border-swap',
   SUPPRESS: 'bg-suppress border-suppress',
 }
 

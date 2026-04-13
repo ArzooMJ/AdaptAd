@@ -27,7 +27,7 @@ export interface AgentScore {
 }
 
 export interface DecisionResult {
-  decision: 'SHOW' | 'SOFTEN' | 'DELAY' | 'SUPPRESS'
+  decision: 'SHOW' | 'SWAP' | 'SUPPRESS'
   user_advocate: AgentScore; advertiser_advocate: AgentScore
   combined_score: number; reasoning: string; timestamp: string
   session_id: string; user_id: number; ad_id: string

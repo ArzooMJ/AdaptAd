@@ -20,8 +20,7 @@ from pydantic import BaseModel, field_validator, model_validator
 
 class AdDecision(str, Enum):
     SHOW = "SHOW"
-    SOFTEN = "SOFTEN"
-    DELAY = "DELAY"
+    SWAP = "SWAP"
     SUPPRESS = "SUPPRESS"
 
 

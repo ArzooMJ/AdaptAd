@@ -93,6 +93,14 @@ def _pod_size(rng: random.Random) -> int:
     return rng.choices([1, 2, 3], weights=[0.25, 0.55, 0.20], k=1)[0]
 
 
+def _best_swap_ad(user, ads, rng):
+    """Find the most relevant ad for this user — used when SWAP is decided."""
+    relevant = [a for a in ads if a.category in user.interests]
+    if relevant:
+        return rng.choice(relevant)
+    return max(ads, key=lambda a: a.priority)
+
+
 def _run_adaptad_session(user, content, ads, chromosome, seed) -> list[dict]:
     """Run AdaptAd policy and return decision records with ad pods."""
     opportunities, _ = simulate_session(
@@ -107,7 +115,6 @@ def _run_adaptad_session(user, content, ads, chromosome, seed) -> list[dict]:
     for opp in opportunities:
         minute = opp.session_context.current_minute
         minutes_gap = max(0, minute - prev_minute)
-        # Build pod: first ad is from the opportunity, extras are random picks
         pod = [opp.ad_candidate] + [rng.choice(ads) for _ in range(_pod_size(rng) - 1)]
         for ad_candidate in pod:
             live_ctx = running_ctx.model_copy(update={"current_minute": minute})
@@ -118,14 +125,25 @@ def _run_adaptad_session(user, content, ads, chromosome, seed) -> list[dict]:
                 adv = score_advertiser_advocate(user, ad_candidate, live_ctx, chromosome)
                 result = negotiate(ua, adv, chromosome, user.id, ad_candidate.id, "ab_adaptad")
                 decision = result.decision
+            # For SWAP: replace the scheduled ad with the most relevant one for this user
+            if decision == AdDecision.SWAP:
+                swapped = _best_swap_ad(user, ads, rng)
+                records.append({
+                    "break_minute": minute,
+                    "ad_id": swapped.id,
+                    "ad_category": swapped.category,
+                    "decision": "SWAP",
+                    "original_category": ad_candidate.category,
+                })
+            else:
+                records.append({
+                    "break_minute": minute,
+                    "ad_id": ad_candidate.id,
+                    "ad_category": ad_candidate.category,
+                    "decision": decision.value,
+                })
             running_ctx = apply_decision(running_ctx, user, decision, minute, minutes_gap)
-            minutes_gap = 0  # subsequent ads in pod have no gap
-            records.append({
-                "break_minute": minute,
-                "ad_id": ad_candidate.id,
-                "ad_category": ad_candidate.category,
-                "decision": decision.value,
-            })
+            minutes_gap = 0
         prev_minute = minute
     return records
 
@@ -180,7 +198,7 @@ def _build_content_profile(content)->dict:
     }
 
 def _build_session_context(user, content, records)-> dict:
-    total_ads = sum(1 for r in records if r["decision"] in ("SHOW", "SOFTEN"))
+    total_ads = sum(1 for r in records if r["decision"] in ("SHOW", "SWAP"))
     total_breaks = len(records)
 
     return {

@@ -7,7 +7,7 @@ import {
 import DecisionBadge from '../components/DecisionBadge'
 
 const DECISION_COLORS: Record<string, string> = {
-  SHOW: '#00ff88', SOFTEN: '#ffb800', DELAY: '#ff6b00', SUPPRESS: '#ff2d55',
+  SHOW: '#00ff88', SWAP: '#38bdf8', SUPPRESS: '#ff2d55',
 }
 
 interface BatchRow {
@@ -212,7 +212,7 @@ export default function BatchResults() {
               <h2 className="section-title">Per-user Results</h2>
               <span className="text-xs text-zinc-600 font-mono">{filtered.length} rows</span>
               <div className="ml-auto flex gap-2 flex-wrap">
-                {['ALL','SHOW','SOFTEN','DELAY','SUPPRESS'].map(d => (
+                {['ALL','SHOW','SWAP','SUPPRESS'].map(d => (
                   <button key={d} onClick={() => setFilter(d)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                       filter === d

@@ -24,8 +24,7 @@ def update_fatigue(
     cfg = config.fatigue
     increment_map = {
         AdDecision.SHOW: cfg.show_increment,
-        AdDecision.SOFTEN: cfg.soften_increment,
-        AdDecision.DELAY: cfg.delay_increment,
+        AdDecision.SWAP: cfg.swap_increment,
         AdDecision.SUPPRESS: cfg.suppress_increment,
     }
     increment = increment_map.get(decision, 0.0)

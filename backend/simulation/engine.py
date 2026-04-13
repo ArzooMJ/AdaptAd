@@ -92,12 +92,10 @@ def score_outcome(
             # Irrelevant ad to fatigued user. Bad outcome.
             satisfaction = 0.15
             revenue = 0.50
-    elif decision == AdDecision.SOFTEN:
-        satisfaction = 0.60 if relevant else 0.35
-        revenue = 0.55
-    elif decision == AdDecision.DELAY:
-        satisfaction = 0.65
-        revenue = 0.15
+    elif decision == AdDecision.SWAP:
+        # System replaced the scheduled ad with the most relevant one for this user.
+        satisfaction = 0.63
+        revenue = 0.72
     else:  # SUPPRESS
         satisfaction = 0.70
         revenue = 0.02

@@ -103,9 +103,9 @@ def apply_decision(
     This is the fix for the pre-computed ads_seen_so_far bug:
     we mutate the context here rather than pre-computing.
     """
-    # Increment shown count only for SHOW and SOFTEN.
+    # Increment shown count for SHOW and SWAP — an ad ran in both cases.
     ads_shown = session_context.ads_shown_this_session
-    if decision in (AdDecision.SHOW, AdDecision.SOFTEN):
+    if decision in (AdDecision.SHOW, AdDecision.SWAP):
         ads_shown += 1
     updated = session_context.model_copy(
         update={

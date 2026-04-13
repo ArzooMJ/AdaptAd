@@ -22,9 +22,8 @@ def negotiate(
     Combine agent scores into a final decision.
 
     combined = user_score * 0.55 + advertiser_score * 0.45
-    show_threshold   = 0.45 + frequency_threshold * 0.35
-    soften_threshold = show_threshold - (0.08 + soften_threshold_gene * 0.14)
-    delay_threshold  = soften_threshold - (0.10 + delay_probability_gene * 0.10)
+    show_threshold = 0.45 + frequency_threshold * 0.35
+    swap_threshold = show_threshold - (0.08 + soften_threshold_gene * 0.14)
     """
     if isinstance(user_advocate, dict):
         user_advocate = AgentScore.model_validate(user_advocate)
@@ -38,16 +37,13 @@ def negotiate(
     )
     combined = max(0.0, min(1.0, combined))
 
-    show_thresh   = cfg.base_show_threshold + chromosome.frequency_threshold * cfg.show_threshold_scale
-    soften_thresh = show_thresh   - (0.08 + chromosome.soften_threshold  * 0.14)
-    delay_thresh  = soften_thresh - (0.10 + chromosome.delay_probability * 0.10)
+    show_thresh = cfg.base_show_threshold + chromosome.frequency_threshold * cfg.show_threshold_scale
+    swap_thresh = show_thresh - (0.08 + chromosome.soften_threshold * 0.14)
 
     if combined >= show_thresh:
         decision = AdDecision.SHOW
-    elif combined >= soften_thresh:
-        decision = AdDecision.SOFTEN
-    elif combined >= delay_thresh:
-        decision = AdDecision.DELAY
+    elif combined >= swap_thresh:
+        decision = AdDecision.SWAP
     else:
         decision = AdDecision.SUPPRESS
 
@@ -55,8 +51,7 @@ def negotiate(
         f"Combined score {combined:.3f} "
         f"(user={user_advocate.score:.3f} x 0.55, "
         f"advertiser={advertiser_advocate.score:.3f} x 0.45). "
-        f"Thresholds: show={show_thresh:.3f}, soften={soften_thresh:.3f}, "
-        f"delay={delay_thresh:.3f}. "
+        f"Thresholds: show={show_thresh:.3f}, swap={swap_thresh:.3f}. "
         f"Decision: {decision.value}."
     )
 
