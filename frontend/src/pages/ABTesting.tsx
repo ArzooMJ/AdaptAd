@@ -203,10 +203,11 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
 
 export default function ABTesting() {
   const {
-    abSession: session, abXRating: xRating, abYRating: yRating, abSubmitted: submitted,
+    abSession: _abSession, abXRating: xRating, abYRating: yRating, abSubmitted: submitted,
     setAbSession, setAbXRating, setAbYRating, setAbSubmitted, clearAbTest,
   } = useStore()
 
+  const session = _abSession as Session | null
   const setSession = setAbSession as (s: Session | null) => void
   const setXRating = (r: Rating) => setAbXRating(r)
   const setYRating = (r: Rating) => setAbYRating(r)
