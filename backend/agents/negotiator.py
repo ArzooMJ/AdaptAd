@@ -22,9 +22,9 @@ def negotiate(
     Combine agent scores into a final decision.
 
     combined = user_score * 0.55 + advertiser_score * 0.45
-    show_threshold = 0.45 + frequency_threshold_gene * 0.35
-    soften_threshold = show_threshold - 0.15
-    delay_threshold = soften_threshold - 0.15
+    show_threshold   = 0.45 + frequency_threshold * 0.35
+    soften_threshold = show_threshold - (0.08 + soften_threshold_gene * 0.14)
+    delay_threshold  = soften_threshold - (0.10 + delay_probability_gene * 0.10)
     """
     if isinstance(user_advocate, dict):
         user_advocate = AgentScore.model_validate(user_advocate)
@@ -38,9 +38,9 @@ def negotiate(
     )
     combined = max(0.0, min(1.0, combined))
 
-    show_thresh = cfg.base_show_threshold + chromosome.frequency_threshold * cfg.show_threshold_scale
-    soften_thresh = show_thresh - cfg.soften_offset
-    delay_thresh = soften_thresh - cfg.delay_offset
+    show_thresh   = cfg.base_show_threshold + chromosome.frequency_threshold * cfg.show_threshold_scale
+    soften_thresh = show_thresh   - (0.08 + chromosome.soften_threshold  * 0.14)
+    delay_thresh  = soften_thresh - (0.10 + chromosome.delay_probability * 0.10)
 
     if combined >= show_thresh:
         decision = AdDecision.SHOW
