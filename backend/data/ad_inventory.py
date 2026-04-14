@@ -15,15 +15,17 @@ from .constants import AD_CATEGORIES, AGE_GROUPS, ADVERTISERS
 DEFAULT_SEED = 42
 
 # Duration distribution per category. Values are (duration, weight) pairs.
+# Netflix/Prime standard: 15s and 30s non-skippable spots only.
+# No 45s or 60s — those are pre-streaming TV formats.
 DURATION_WEIGHTS: dict[str, list[tuple[int, float]]] = {
-    "tech":    [(15, 0.25), (30, 0.45), (45, 0.15), (60, 0.15)],
-    "food":    [(15, 0.35), (30, 0.50), (45, 0.10), (60, 0.05)],
-    "auto":    [(15, 0.10), (30, 0.30), (45, 0.25), (60, 0.35)],
-    "fashion": [(15, 0.30), (30, 0.50), (45, 0.15), (60, 0.05)],
-    "finance": [(15, 0.20), (30, 0.40), (45, 0.20), (60, 0.20)],
-    "travel":  [(15, 0.15), (30, 0.40), (45, 0.25), (60, 0.20)],
-    "health":  [(15, 0.30), (30, 0.50), (45, 0.15), (60, 0.05)],
-    "gaming":  [(15, 0.30), (30, 0.45), (45, 0.15), (60, 0.10)],
+    "tech":    [(15, 0.40), (30, 0.60)],
+    "food":    [(15, 0.45), (30, 0.55)],
+    "auto":    [(15, 0.20), (30, 0.80)],  # auto brands prefer 30s for storytelling
+    "fashion": [(15, 0.50), (30, 0.50)],
+    "finance": [(15, 0.30), (30, 0.70)],
+    "travel":  [(15, 0.25), (30, 0.75)],
+    "health":  [(15, 0.40), (30, 0.60)],
+    "gaming":  [(15, 0.55), (30, 0.45)],
 }
 
 # Age group affinities per category.

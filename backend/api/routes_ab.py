@@ -18,7 +18,7 @@ from pydantic import BaseModel, field_validator
 from ..agents.user_advocate import score_user_advocate
 from ..agents.advertiser_advocate import score_advertiser_advocate
 from ..agents.negotiator import negotiate
-from ..simulation.session import simulate_session, apply_decision
+from ..simulation.session import simulate_session, apply_decision, build_session_context
 from ..simulation.fatigue import should_force_suppress
 from ..state import AdDecision, ContentMood, ContentItem, TimeOfDay, UserProfile
 from ..data.content_library import GENRE_MOODS, _generate_intensity_curve, _natural_break_points
@@ -88,84 +88,130 @@ class ABRatingRequest(BaseModel):
         return v
 
 
-def _pod_size(rng: random.Random) -> int:
-    """Return number of ads in this break pod. Weighted like real streaming platforms."""
-    return rng.choices([1, 2, 3], weights=[0.25, 0.55, 0.20], k=1)[0]
+def _netflix_schedule(duration_minutes: int, is_series: bool) -> list[dict]:
+    """
+    Netflix/Prime-style ad schedule: ~4.5 minutes of ads per hour.
+    Structure: pre-roll at minute 0 + mid-roll pods at even intervals.
+    Each mid-roll pod = 2 ads at 15–30 seconds each.
+    """
+    target_slots = max(2, round((duration_minutes / 60) * 9))  # 9 × 30s = 4.5 min/hr
+    pre_roll = 1 if is_series else 2
+    mid_slots = max(2, target_slots - pre_roll)
+    num_pods = max(1, min(4, round(mid_slots / 2)))
+
+    schedule = [{"minute": 0, "pod_size": pre_roll}]
+    if duration_minutes <= 10:
+        return schedule
+
+    usable_start = min(8, duration_minutes // 4)
+    usable_end = max(usable_start + 5, duration_minutes - 5)
+
+    if num_pods == 1:
+        schedule.append({"minute": round((usable_start + usable_end) / 2), "pod_size": 2})
+    else:
+        step = (usable_end - usable_start) / (num_pods + 1)
+        for i in range(1, num_pods + 1):
+            schedule.append({"minute": round(usable_start + i * step), "pod_size": 2})
+
+    return schedule
 
 
 def _best_swap_ad(user, ads, rng):
-    """Find the most relevant ad for this user — used when SWAP is decided."""
+    """Return the most relevant ad for this user from the pool."""
     relevant = [a for a in ads if a.category in user.interests]
-    if relevant:
-        return rng.choice(relevant)
-    return max(ads, key=lambda a: a.priority)
+    pool = relevant if relevant else ads
+    return max(pool, key=lambda a: a.priority + rng.uniform(0, 0.05))
 
 
-def _run_adaptad_session(user, content, ads, chromosome, seed) -> list[dict]:
-    """Run AdaptAd policy and return decision records with ad pods."""
-    opportunities, _ = simulate_session(
-        user=user, content=content, ad_pool=ads, seed=seed
-    )
+def _run_baseline_session(ads, schedule) -> list[dict]:
+    """
+    Industry standard: fixed schedule, always SHOW.
+    Ads served in priority order — standard insertion-order waterfall.
+    This is what Netflix/Prime does today.
+    """
+    scheduled = sorted(ads, key=lambda a: -a.priority)
     records = []
-    if not opportunities:
-        return records
-    rng = random.Random(seed + 1)
-    running_ctx = opportunities[0].session_context.model_copy()
+    ad_idx = 0
+    for break_info in schedule:
+        minute = break_info["minute"]
+        for _ in range(break_info["pod_size"]):
+            ad = scheduled[ad_idx % len(scheduled)]
+            ad_idx += 1
+            records.append({
+                "break_minute": minute,
+                "ad_id": ad.id,
+                "ad_category": ad.category,
+                "advertiser": ad.advertiser,
+                "duration_seconds": ad.duration_seconds,
+                "decision": "SHOW",
+            })
+    return records
+
+
+def _run_adaptad_session(user, content, ads, chromosome, schedule, seed) -> list[dict]:
+    """
+    AdaptAd: same break structure as baseline, SHOW or SWAP at each slot.
+    SUPPRESS only when fatigue exceeds the force-suppress threshold.
+    """
+    rng = random.Random(seed)
+    scheduled = sorted(ads, key=lambda a: -a.priority)
+    ad_idx = 0
+    records = []
+
+    ctx = build_session_context(content, [], user=user)
     prev_minute = 0
-    for opp in opportunities:
-        minute = opp.session_context.current_minute
+
+    for break_info in schedule:
+        minute = break_info["minute"]
         minutes_gap = max(0, minute - prev_minute)
-        pod = [opp.ad_candidate] + [rng.choice(ads) for _ in range(_pod_size(rng) - 1)]
-        for ad_candidate in pod:
-            live_ctx = running_ctx.model_copy(update={"current_minute": minute})
+
+        for _ in range(break_info["pod_size"]):
+            ad_candidate = scheduled[ad_idx % len(scheduled)]
+            ad_idx += 1
+            live_ctx = ctx.model_copy(update={"current_minute": minute})
+
             if should_force_suppress(live_ctx):
                 decision = AdDecision.SUPPRESS
+                records.append({
+                    "break_minute": minute,
+                    "ad_id": ad_candidate.id,
+                    "ad_category": ad_candidate.category,
+                    "advertiser": ad_candidate.advertiser,
+                    "duration_seconds": ad_candidate.duration_seconds,
+                    "decision": "SUPPRESS",
+                })
             else:
                 ua = score_user_advocate(user, ad_candidate, live_ctx, chromosome)
                 adv = score_advertiser_advocate(user, ad_candidate, live_ctx, chromosome)
                 result = negotiate(ua, adv, chromosome, user.id, ad_candidate.id, "ab_adaptad")
                 decision = result.decision
-            # For SWAP: replace the scheduled ad with the most relevant one for this user
-            if decision == AdDecision.SWAP:
-                swapped = _best_swap_ad(user, ads, rng)
-                records.append({
-                    "break_minute": minute,
-                    "ad_id": swapped.id,
-                    "ad_category": swapped.category,
-                    "decision": "SWAP",
-                    "original_category": ad_candidate.category,
-                })
-            else:
-                records.append({
-                    "break_minute": minute,
-                    "ad_id": ad_candidate.id,
-                    "ad_category": ad_candidate.category,
-                    "decision": decision.value,
-                })
-            running_ctx = apply_decision(running_ctx, user, decision, minute, minutes_gap)
+
+                if decision == AdDecision.SWAP:
+                    swapped = _best_swap_ad(user, ads, rng)
+                    records.append({
+                        "break_minute": minute,
+                        "ad_id": swapped.id,
+                        "ad_category": swapped.category,
+                        "advertiser": swapped.advertiser,
+                        "duration_seconds": swapped.duration_seconds,
+                        "decision": "SWAP",
+                        "original_category": ad_candidate.category,
+                    })
+                else:
+                    records.append({
+                        "break_minute": minute,
+                        "ad_id": ad_candidate.id,
+                        "ad_category": ad_candidate.category,
+                        "advertiser": ad_candidate.advertiser,
+                        "duration_seconds": ad_candidate.duration_seconds,
+                        "decision": "SHOW",
+                    })
+
+            ctx = apply_decision(ctx, user, decision, minute, minutes_gap)
             minutes_gap = 0
+
         prev_minute = minute
-    return records
 
-
-def _run_random_session(user, content, ads, seed) -> list[dict]:
-    """Run random baseline and return decision records with ad pods."""
-    rng = random.Random(seed)
-    opportunities, _ = simulate_session(
-        user=user, content=content, ad_pool=ads, seed=seed
-    )
-    records = []
-    for opp in opportunities:
-        minute = opp.session_context.current_minute
-        pod = [opp.ad_candidate] + [rng.choice(ads) for _ in range(_pod_size(rng) - 1)]
-        for ad_candidate in pod:
-            decision = rng.choice([AdDecision.SHOW, AdDecision.SUPPRESS])
-            records.append({
-                "break_minute": minute,
-                "ad_id": ad_candidate.id,
-                "ad_category": ad_candidate.category,
-                "decision": decision.value,
-            })
     return records
 
 
@@ -228,33 +274,16 @@ def start_ab_session(req: ABStartRequest):
 
     chromosome = get_chromosome()
     seed = req.seed or rng.randint(0, 2**31)
+    schedule = _netflix_schedule(content.duration_minutes, content.is_series)
 
-    adaptad_records = _run_adaptad_session(user, content, ads, chromosome, seed)
-    random_records = _run_random_session(user, content, ads, seed + 1)
+    # Session A = Industry Standard (baseline), Session B = AdaptAd — always, no blind flip.
+    session_x_records = _run_baseline_session(ads, schedule)
+    session_y_records = _run_adaptad_session(user, content, ads, chromosome, schedule, seed)
+    x_is_adaptad = False
 
-    #new code
-    user_profile=_build_user_profile(user)
+    user_profile = _build_user_profile(user)
     content_profile = _build_content_profile(content)
-    session_context= _build_session_context(user, content, adaptad_records)
-
-    # Ensure sessions are not identical; regenerate random if needed.
-    attempts = 0
-    while (
-        [r["decision"] for r in adaptad_records] == [r["decision"] for r in random_records]
-        and attempts < 5
-    ):
-        random_records = _run_random_session(user, content, ads, seed + attempts + 10)
-        attempts += 1
-
-    # Randomize label assignment to prevent bias.
-    if rng.random() < 0.5:
-        session_x_records = adaptad_records
-        session_y_records = random_records
-        x_is_adaptad = True
-    else:
-        session_x_records = random_records
-        session_y_records = adaptad_records
-        x_is_adaptad = False
+    session_context = _build_session_context(user, content, session_y_records)
 
     session_id = str(uuid.uuid4())
     _ab_sessions[session_id] = {
@@ -471,26 +500,16 @@ def start_custom_ab_session(req: CustomABRequest):
     ads = get_ads()
     chromosome = get_chromosome()
     seed = req.seed or rng.randint(0, 2**31)
+    schedule = _netflix_schedule(content.duration_minutes, content.is_series)
 
-    adaptad_records = _run_adaptad_session(user, content, ads, chromosome, seed)
-    random_records = _run_random_session(user, content, ads, seed + 1)
-
-    attempts = 0
-    while (
-        [r["decision"] for r in adaptad_records] == [r["decision"] for r in random_records]
-        and attempts < 5
-    ):
-        random_records = _run_random_session(user, content, ads, seed + attempts + 10)
-        attempts += 1
-
-    if rng.random() < 0.5:
-        session_x_records, session_y_records, x_is_adaptad = adaptad_records, random_records, True
-    else:
-        session_x_records, session_y_records, x_is_adaptad = random_records, adaptad_records, False
+    # Session A = Industry Standard (baseline), Session B = AdaptAd — always, no blind flip.
+    session_x_records = _run_baseline_session(ads, schedule)
+    session_y_records = _run_adaptad_session(user, content, ads, chromosome, schedule, seed)
+    x_is_adaptad = False
 
     user_profile = _build_user_profile(user)
     content_profile = _build_content_profile(content)
-    session_context = _build_session_context(user, content, adaptad_records)
+    session_context = _build_session_context(user, content, session_y_records)
 
     session_id = str(uuid.uuid4())
     _ab_sessions[session_id] = {

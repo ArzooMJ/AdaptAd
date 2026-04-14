@@ -10,7 +10,7 @@ const AGE_GROUPS = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+']
 const WATCH_TIMES = ['morning', 'afternoon', 'evening', 'latenight']
 
 // ── types ─────────────────────────────────────────────────────────────────────
-interface Break { break_minute: number; ad_category: string; decision: string; original_category?: string }
+interface Break { break_minute: number; ad_category: string; decision: string; original_category?: string; advertiser?: string; duration_seconds?: number }
 interface UserProfile {
   name: string; age_group: string; profession: string
   interests: string[]; content_preferences: string[]
@@ -176,13 +176,15 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
                   {pod.minute}m — {pod.ads.length} ad{pod.ads.length > 1 ? 's' : ''}
                 </span>
                 {pod.ads.map((b, j) => (
-                  <div key={j} className="flex items-center gap-2 pl-1">
+                  <div key={j} className="flex items-center gap-2 pl-1 flex-wrap">
                     <span className="text-slate-600 text-xs w-3">{j + 1}.</span>
                     <DecisionBadge decision={b.decision} size="sm" />
                     {b.decision === 'SWAP' && b.original_category
                       ? <span className="text-slate-500 text-xs"><span className="line-through opacity-50">{b.original_category}</span> → {b.ad_category}</span>
                       : <span className="text-slate-500 text-xs">{b.ad_category}</span>
                     }
+                    {b.advertiser && <span className="text-slate-600 text-xs">· {b.advertiser}</span>}
+                    {b.duration_seconds && <span className="text-slate-700 text-xs font-mono">{b.duration_seconds}s</span>}
                   </div>
                 ))}
               </div>
@@ -487,12 +489,17 @@ export default function ABTesting() {
       {session && (
         <>
           {/* Info banner */}
-          <div className="card">
-            <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Rate each session honestly.</p>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              You do not know which system generated which schedule. Consider whether the ads feel
-              disruptive and whether they fit you and what you're watching.
-            </p>
+          <div className="card space-y-2">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 rounded-lg px-3 py-2 border border-slate-700/40" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Session A — Industry Standard</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Fixed schedule, priority-ordered ads — exactly how Netflix serves ads today.</p>
+              </div>
+              <div className="flex-1 rounded-lg px-3 py-2 border border-sky-700/40 bg-sky-900/10">
+                <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-0.5">Session B — AdaptAd</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Same breaks, same slots — but the system picks the best ad for you at each moment.</p>
+              </div>
+            </div>
           </div>
 
           {/* Three info panels */}
@@ -514,15 +521,15 @@ export default function ABTesting() {
 
           {/* Two session cards */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <SessionCard label="X" breaks={session.session_x as Break[]} rating={xRating}
+            <SessionCard label="A — Industry Standard" breaks={session.session_x as Break[]} rating={xRating}
               onRate={(f, v) => setXRating({ ...xRating, [f]: v })} readonly={submitted} />
-            <SessionCard label="Y" breaks={session.session_y as Break[]} rating={yRating}
+            <SessionCard label="B — AdaptAd" breaks={session.session_y as Break[]} rating={yRating}
               onRate={(f, v) => setYRating({ ...yRating, [f]: v })} readonly={submitted} />
           </div>
 
           {!submitted && (
             <button className="btn-primary" onClick={submitRatings} disabled={loading}>
-              {loading ? 'Submitting…' : 'Submit Ratings & Reveal'}
+              {loading ? 'Submitting…' : 'Submit Ratings'}
             </button>
           )}
 
@@ -532,22 +539,22 @@ export default function ABTesting() {
               winner === 'adaptad' ? 'border-sky-500/40 bg-sky-900/10' :
               winner === 'baseline' ? 'border-red-500/40 bg-red-900/10' : 'border-slate-600/40'
             }`}>
-              {winner === 'adaptad' && <p className="text-sky-400 font-bold text-lg">AdaptAd won this round</p>}
-              {winner === 'baseline' && <p className="text-red-400 font-bold text-lg">Baseline won this round</p>}
-              {winner === 'tie' && <p className="text-slate-300 font-bold text-lg">This round was a tie</p>}
+              {winner === 'adaptad' && <p className="text-sky-400 font-bold text-lg">AdaptAd felt better</p>}
+              {winner === 'baseline' && <p className="text-slate-300 font-bold text-lg">Industry Standard felt better</p>}
+              {winner === 'tie' && <p className="text-slate-300 font-bold text-lg">It was a tie</p>}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
-                  <p className="text-xs text-sky-500 font-semibold mb-1">
-                    AdaptAd score: <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{adaptadScore > 0 ? '+' : ''}{adaptadScore} / 19</span>
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Uses your profile to decide when and whether to show each ad.</p>
-                </div>
-                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
+                <div className="rounded-xl px-4 py-3 border border-slate-700/40" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
                   <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                    Random baseline score: <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{baselineScore > 0 ? '+' : ''}{baselineScore} / 19</span>
+                    Industry Standard (Session A): <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{baselineScore > 0 ? '+' : ''}{baselineScore} / 19</span>
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No intelligence — randomly shows or suppresses with no context.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Fixed priority-order schedule — every ad served as scheduled, no personalisation.</p>
+                </div>
+                <div className="rounded-xl px-4 py-3 border border-sky-700/40 bg-sky-900/10">
+                  <p className="text-xs text-sky-500 font-semibold mb-1">
+                    AdaptAd (Session B): <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{adaptadScore > 0 ? '+' : ''}{adaptadScore} / 19</span>
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Same breaks, same slots — selects the most relevant ad for you at each moment.</p>
                 </div>
               </div>
 
