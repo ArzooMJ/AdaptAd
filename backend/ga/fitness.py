@@ -46,10 +46,12 @@ def _sat_rev(
         else:
             sat, rev = 0.12 + tol_boost, 0.45
     elif decision == AdDecision.SWAP:
-        # System replaces the scheduled ad with the most relevant one for this user.
-        # Satisfaction is better than a random irrelevant SHOW; revenue is solid.
-        sat = 0.63 + tol_boost * 0.5
-        rev = 0.72
+        # SWAP always plays a relevant ad.
+        sat = (0.65 if low_fatigue else 0.45) + tol_boost
+        rev = 0.75
+    elif decision == AdDecision.DELAY:
+        # Approximate combined value of deferral + guaranteed future SHOW.
+        sat, rev = 0.62, 0.65
     else:  # SUPPRESS
         sat, rev = 0.72, 0.02
 
@@ -98,9 +100,12 @@ def evaluate_chromosome_fitness(
     tod_indices     = rng.integers(0, 4, size=N)
     season_indices  = rng.integers(0, 4, size=N)
 
-    # Precompute per-chromosome thresholds — same formula as negotiator.py
+    # Precompute per-chromosome thresholds — mirrors negotiator.py score ladder.
+    # DELAY is condition-based (intensity/timing), not a score band; approximated below.
     show_thresh = ag_cfg.base_show_threshold + chromosome.frequency_threshold * ag_cfg.show_threshold_scale
-    swap_thresh = show_thresh - (0.08 + chromosome.soften_threshold * 0.14)
+    swap_thresh = show_thresh - (0.08 + chromosome.swap_relevance_min * 0.14)
+    # Intensity threshold that triggers DELAY (same formula as negotiator).
+    delay_intensity_thresh = 0.50 + chromosome.delay_threshold * 0.25
 
     total_sat = 0.0
     total_rev = 0.0
@@ -136,7 +141,16 @@ def evaluate_chromosome_fitness(
             ua.score * ag_cfg.user_weight + adv.score * ag_cfg.advertiser_weight
         ))
 
-        if combined >= show_thresh:
+        # Approximate intensity from content at sampled minute (0.5 if no content).
+        intensity = 0.5
+        if content.intensity_curve:
+            idx = min(int(minute_arr[i]), len(content.intensity_curve) - 1)
+            intensity = content.intensity_curve[idx]
+
+        # DELAY fires on intense scenes (mirrors negotiator condition-based logic).
+        if intensity > delay_intensity_thresh and combined >= 0.25:
+            decision = AdDecision.DELAY
+        elif combined >= show_thresh:
             decision = AdDecision.SHOW
         elif combined >= swap_thresh:
             decision = AdDecision.SWAP

@@ -37,7 +37,8 @@ class FatigueConfig:
     # Values chosen to reflect relative intrusiveness of each decision.
     # SHOW is fully intrusive, SUPPRESS has zero impact.
     show_increment: float = 0.10
-    swap_increment: float = 0.07    # Slightly less than SHOW — swapped ad is more relevant
+    swap_increment: float = 0.06
+    delay_increment: float = 0.01
     suppress_increment: float = 0.00
     # Reward ad-free viewing with mild fatigue recovery.
     decay_per_minute: float = 0.01
@@ -63,13 +64,14 @@ class AgentConfig:
     ua_binge_penalty: float = 0.08
 
     # Advertiser Advocate weights
-    adv_base: float = 0.55
+    adv_base: float = 0.30
     adv_relevance_multiplier: float = 1.5
-    adv_engagement_multiplier: float = 0.3
+    adv_irrelevance_penalty: float = -0.20
+    adv_engagement_multiplier: float = 0.15
     adv_primetime_evening: float = 0.15
     adv_primetime_afternoon: float = 0.05
     adv_priority_scale: float = 0.2
-    adv_demographic_match_bonus: float = 0.08
+    adv_demographic_match_bonus: float = 0.05
 
     # Negotiator thresholds
     user_weight: float = 0.55
@@ -77,7 +79,7 @@ class AgentConfig:
     # show_threshold = 0.45 + frequency_threshold_gene * 0.35
     base_show_threshold: float = 0.45
     show_threshold_scale: float = 0.35
-    soften_offset: float = 0.15
+    swap_offset: float = 0.15
     delay_offset: float = 0.15
 
 

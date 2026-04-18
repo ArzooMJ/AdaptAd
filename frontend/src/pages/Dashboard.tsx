@@ -27,9 +27,10 @@ const TICKER_ADS    = ['tech', 'food', 'gaming', 'travel', 'fashion', 'health', 
 const TICKER_DECISIONS = [
   { label: 'SHOW',     color: 'text-show',     bg: 'bg-show/10 border-show/30' },
   { label: 'SWAP',     color: 'text-swap',     bg: 'bg-swap/10 border-swap/30' },
+  { label: 'DELAY',    color: 'text-delay',    bg: 'bg-delay/10 border-delay/30' },
   { label: 'SUPPRESS', color: 'text-suppress', bg: 'bg-suppress/10 border-suppress/30' },
 ]
-const TICKER_WEIGHTS = [0.45, 0.30, 0.25]
+const TICKER_WEIGHTS = [0.45, 0.20, 0.15, 0.20]
 
 function pickWeighted() {
   const r = Math.random()
@@ -126,10 +127,10 @@ function StatusBar({ health }: { health: { users: number; ads: number; content: 
 
 // ── decision state cards ──────────────────────────────────────────────────────
 const DECISION_META = [
-  { d: 'SHOW',     color: 'show',     desc: 'Favorable conditions met',     icon: '▶' },
-  { d: 'SOFTEN',   color: 'soften',   desc: 'Serve a shorter version',      icon: '◈' },
-  { d: 'DELAY',    color: 'delay',    desc: 'Wait for a better moment',     icon: '⏸' },
-  { d: 'SUPPRESS', color: 'suppress', desc: 'Skip — protect experience',    icon: '✕' },
+  { d: 'SHOW',     color: 'show',     desc: 'Favorable conditions — play ad as-is',        icon: '▶' },
+  { d: 'SWAP',     color: 'swap',     desc: 'Replace with a more relevant ad',             icon: '⇄' },
+  { d: 'DELAY',    color: 'delay',    desc: 'Defer to next break — guaranteed to play',    icon: '⏸' },
+  { d: 'SUPPRESS', color: 'suppress', desc: 'Skip entirely — protect the experience',      icon: '✕' },
 ] as const
 
 // ── main ──────────────────────────────────────────────────────────────────────
@@ -265,7 +266,7 @@ export default function Dashboard() {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-zinc-500 mb-4">
-            8 genes evolved by the GA — controlling when ads are shown, softened, delayed, or suppressed.
+            8 genes evolved by the GA — controlling when ads are shown, swapped, delayed, or suppressed.
           </p>
           <ChromosomeViz genes={genes} fitness={fitness} />
         </div>

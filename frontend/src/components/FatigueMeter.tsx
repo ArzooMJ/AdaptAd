@@ -8,7 +8,7 @@ export default function FatigueMeter({ value, label = 'Session Fatigue' }: Props
   const color =
     pct > 0.85 ? 'bg-suppress' :
     pct > 0.70 ? 'bg-delay' :
-    pct > 0.50 ? 'bg-soften' :
+    pct > 0.50 ? 'bg-swap' :
     'bg-show'
 
   return (

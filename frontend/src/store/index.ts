@@ -22,9 +22,9 @@ interface ABSession {
 }
 
 interface ABRating {
-  annoyance: number
+  comfort: number
   relevance: number
-  willingness: number
+  overall_experience: number
 }
 
 interface AdaptAdStore {
@@ -50,10 +50,12 @@ interface AdaptAdStore {
   abSession: ABSession | null
   abXRating: ABRating
   abYRating: ABRating
+  abPreferredSession: string
   abSubmitted: boolean
   setAbSession: (s: ABSession | null) => void
   setAbXRating: (r: ABRating) => void
   setAbYRating: (r: ABRating) => void
+  setAbPreferredSession: (v: string) => void
   setAbSubmitted: (v: boolean) => void
   clearAbTest: () => void
 }
@@ -74,17 +76,20 @@ export const useStore = create<AdaptAdStore>()(
       incrementDecisions: () => set((s) => ({ totalDecisions: s.totalDecisions + 1 })),
 
       abSession: null,
-      abXRating: { annoyance: 0, relevance: 0, willingness: 0 },
-      abYRating: { annoyance: 0, relevance: 0, willingness: 0 },
+      abXRating: { comfort: 0, relevance: 0, overall_experience: 0 },
+      abYRating: { comfort: 0, relevance: 0, overall_experience: 0 },
+      abPreferredSession: '',
       abSubmitted: false,
       setAbSession: (s) => set({ abSession: s }),
       setAbXRating: (r) => set({ abXRating: r }),
       setAbYRating: (r) => set({ abYRating: r }),
+      setAbPreferredSession: (v) => set({ abPreferredSession: v }),
       setAbSubmitted: (v) => set({ abSubmitted: v }),
       clearAbTest: () => set({
         abSession: null,
-        abXRating: { annoyance: 0, relevance: 0, willingness: 0 },
-        abYRating: { annoyance: 0, relevance: 0, willingness: 0 },
+        abXRating: { comfort: 0, relevance: 0, overall_experience: 0 },
+        abYRating: { comfort: 0, relevance: 0, overall_experience: 0 },
+        abPreferredSession: '',
         abSubmitted: false,
       }),
 

@@ -21,6 +21,7 @@ from pydantic import BaseModel, field_validator, model_validator
 class AdDecision(str, Enum):
     SHOW = "SHOW"
     SWAP = "SWAP"
+    DELAY = "DELAY"
     SUPPRESS = "SUPPRESS"
 
 
@@ -126,7 +127,7 @@ class AdCandidate(BaseModel):
 
     @property
     def softened_duration(self) -> int:
-        """Duration when SOFTEN decision is made."""
+        """Half-length duration (legacy; not used by current decision model)."""
         import math
         return math.floor(self.duration_seconds / 2)
 
@@ -183,6 +184,8 @@ class SessionContext(BaseModel):
     content_queue: list[ContentItem] = []
     is_binging: bool = False
     session_fatigue_accumulator: float = 0.0
+    last_shown_ad_category: Optional[str] = None
+    last_shown_ad_minute: Optional[int] = None
 
     @field_validator("session_fatigue_accumulator")
     @classmethod
@@ -211,8 +214,8 @@ class Chromosome(BaseModel):
     relevance_weight: float = 0.5
     timing_weight: float = 0.5
     frequency_threshold: float = 0.5
-    delay_probability: float = 0.5
-    soften_threshold: float = 0.5
+    delay_threshold: float = 0.5
+    swap_relevance_min: float = 0.5
     category_boost: float = 0.5
     session_depth_factor: float = 0.5
 
@@ -223,8 +226,8 @@ class Chromosome(BaseModel):
         "relevance_weight",
         "timing_weight",
         "frequency_threshold",
-        "delay_probability",
-        "soften_threshold",
+        "delay_threshold",
+        "swap_relevance_min",
         "category_boost",
         "session_depth_factor",
     )
@@ -238,8 +241,8 @@ class Chromosome(BaseModel):
             self.relevance_weight,
             self.timing_weight,
             self.frequency_threshold,
-            self.delay_probability,
-            self.soften_threshold,
+            self.delay_threshold,
+            self.swap_relevance_min,
             self.category_boost,
             self.session_depth_factor,
         ]
@@ -253,8 +256,8 @@ class Chromosome(BaseModel):
             relevance_weight=vec[1],
             timing_weight=vec[2],
             frequency_threshold=vec[3],
-            delay_probability=vec[4],
-            soften_threshold=vec[5],
+            delay_threshold=vec[4],
+            swap_relevance_min=vec[5],
             category_boost=vec[6],
             session_depth_factor=vec[7],
         )
@@ -266,8 +269,8 @@ class Chromosome(BaseModel):
             "relevance_weight",
             "timing_weight",
             "frequency_threshold",
-            "delay_probability",
-            "soften_threshold",
+            "delay_threshold",
+            "swap_relevance_min",
             "category_boost",
             "session_depth_factor",
         ]

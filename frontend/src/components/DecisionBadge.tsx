@@ -6,6 +6,7 @@ interface Props {
 const styles: Record<string, string> = {
   SHOW:     'bg-show/20 text-show border-show/40',
   SWAP:     'bg-swap/20 text-swap border-swap/40',
+  DELAY:    'bg-delay/20 text-delay border-delay/40',
   SUPPRESS: 'bg-suppress/20 text-suppress border-suppress/40',
 }
 

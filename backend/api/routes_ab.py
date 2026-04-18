@@ -74,17 +74,26 @@ class CustomABRequest(BaseModel):
 
 
 class ABRatingRequest(BaseModel):
-    session_label: str                  # "X" or "Y" as shown to participant.
-    annoyance: int                      # 1-5
-    relevance: int                      # 1-5
-    willingness: int                    # 1-5
+    session_label: str                  # "X" or "Y"
+    comfort: int                        # 1-5: how smooth/non-disruptive was the experience
+    relevance: int                      # 1-5: how relevant did the ads feel
+    overall_experience: int             # 1-5: overall ad experience quality
+    preferred_session: str              # "Industry Standard" / "AdaptAd" / "No preference"
     notes: Optional[str] = None
 
-    @field_validator("annoyance", "relevance", "willingness")
+    @field_validator("comfort", "relevance", "overall_experience")
     @classmethod
     def validate_rating(cls, v: int) -> int:
-        if not 1 <= v <= 10:
-            raise ValueError("Rating must be between 1 and 10.")
+        if not 1 <= v <= 5:
+            raise ValueError("Rating must be between 1 and 5.")
+        return v
+
+    @field_validator("preferred_session")
+    @classmethod
+    def validate_preferred(cls, v: str) -> str:
+        valid = {"Industry Standard", "AdaptAd", "No preference"}
+        if v not in valid:
+            raise ValueError(f"preferred_session must be one of {valid}")
         return v
 
 
@@ -116,13 +125,6 @@ def _netflix_schedule(duration_minutes: int, is_series: bool) -> list[dict]:
     return schedule
 
 
-def _best_swap_ad(user, ads, rng):
-    """Return the most relevant ad for this user from the pool."""
-    relevant = [a for a in ads if a.category in user.interests]
-    pool = relevant if relevant else ads
-    return max(pool, key=lambda a: a.priority + rng.uniform(0, 0.05))
-
-
 def _run_baseline_session(ads, schedule) -> list[dict]:
     """
     Industry standard: fixed schedule, always SHOW.
@@ -148,22 +150,57 @@ def _run_baseline_session(ads, schedule) -> list[dict]:
     return records
 
 
-def _run_adaptad_session(user, content, ads, chromosome, schedule, seed) -> list[dict]:
+def _pick_swap_ad(user, ads, exclude_id: str, exclude_category: str = None):
     """
-    AdaptAd: same break structure as baseline, SHOW or SWAP at each slot.
-    SUPPRESS only when fatigue exceeds the force-suppress threshold.
+    Return highest-priority interest-matching ad, excluding a specific id
+    and optionally excluding a category (for same-category back-to-back avoidance).
+    Falls back to None if no suitable ad exists.
     """
-    rng = random.Random(seed)
+    candidates = [a for a in ads if a.id != exclude_id]
+    if exclude_category:
+        candidates = [a for a in candidates if a.category != exclude_category]
+    relevant = [a for a in candidates if a.category in user.interests]
+    if relevant:
+        return max(relevant, key=lambda a: a.priority)
+    return None
+
+
+def _run_adaptad_session(user, content, ads, chromosome, schedule, seed=None) -> list[dict]:
+    """
+    AdaptAd: same break structure as baseline, full SHOW/SWAP/DELAY/SUPPRESS decision space.
+    SWAP replaces the scheduled ad with the most interest-relevant ad in the pool.
+    DELAY guarantees the ad plays at the next break point (added on top).
+    """
     scheduled = sorted(ads, key=lambda a: -a.priority)
     ad_idx = 0
     records = []
+    delayed_queue: list[tuple] = []  # (AdCandidate, original_minute) pairs
 
     ctx = build_session_context(content, [], user=user)
     prev_minute = 0
 
-    for break_info in schedule:
+    for i, break_info in enumerate(schedule):
         minute = break_info["minute"]
-        minutes_gap = max(0, minute - prev_minute)
+        # pod_gap is the break-to-break gap — used for back-to-back detection.
+        # minutes_gap resets to 0 after each ad within a pod (for fatigue application only).
+        pod_gap = max(0, minute - prev_minute)
+        minutes_gap = pod_gap
+
+        # Play any deferred ads from the previous break first.
+        for deferred_ad, delayed_from_minute in delayed_queue:
+            records.append({
+                "break_minute": minute,
+                "ad_id": deferred_ad.id,
+                "ad_category": deferred_ad.category,
+                "advertiser": deferred_ad.advertiser,
+                "duration_seconds": deferred_ad.duration_seconds,
+                "decision": "SHOW",
+                "deferred": True,
+                "delayed_from_minute": delayed_from_minute,
+            })
+            ctx = apply_decision(ctx, user, AdDecision.SHOW, minute, 0,
+                                  ad_category=deferred_ad.category)
+        delayed_queue.clear()
 
         for _ in range(break_info["pod_size"]):
             ad_candidate = scheduled[ad_idx % len(scheduled)]
@@ -172,45 +209,89 @@ def _run_adaptad_session(user, content, ads, chromosome, schedule, seed) -> list
 
             if should_force_suppress(live_ctx):
                 decision = AdDecision.SUPPRESS
-                records.append({
-                    "break_minute": minute,
-                    "ad_id": ad_candidate.id,
-                    "ad_category": ad_candidate.category,
-                    "advertiser": ad_candidate.advertiser,
-                    "duration_seconds": ad_candidate.duration_seconds,
-                    "decision": "SUPPRESS",
-                })
+                final_ad = ad_candidate
             else:
+                # Same-category back-to-back guard: substitute the ad before scoring.
+                if (live_ctx.last_shown_ad_category is not None
+                        and ad_candidate.category == live_ctx.last_shown_ad_category):
+                    alt = _pick_swap_ad(user, ads, ad_candidate.id,
+                                        exclude_category=live_ctx.last_shown_ad_category)
+                    if alt:
+                        ad_candidate = alt
+                    else:
+                        # No alternative available — suppress.
+                        records.append({
+                            "break_minute": minute,
+                            "ad_id": ad_candidate.id,
+                            "ad_category": ad_candidate.category,
+                            "advertiser": ad_candidate.advertiser,
+                            "duration_seconds": ad_candidate.duration_seconds,
+                            "decision": AdDecision.SUPPRESS.value,
+                        })
+                        ctx = apply_decision(ctx, user, AdDecision.SUPPRESS, minute, minutes_gap)
+                        minutes_gap = 0
+                        continue
+
                 ua = score_user_advocate(user, ad_candidate, live_ctx, chromosome)
                 adv = score_advertiser_advocate(user, ad_candidate, live_ctx, chromosome)
-                result = negotiate(ua, adv, chromosome, user.id, ad_candidate.id, "ab_adaptad")
+                result = negotiate(
+                    ua, adv, chromosome, user.id, ad_candidate.id, "ab_adaptad",
+                    session_context=live_ctx,
+                    # Always use pod_gap for back-to-back detection so that ads within the
+                    # same pod don't falsely trigger the < 8-minute back-to-back condition.
+                    minutes_since_last_ad=pod_gap,
+                )
                 decision = result.decision
 
                 if decision == AdDecision.SWAP:
-                    swapped = _best_swap_ad(user, ads, rng)
-                    records.append({
-                        "break_minute": minute,
-                        "ad_id": swapped.id,
-                        "ad_category": swapped.category,
-                        "advertiser": swapped.advertiser,
-                        "duration_seconds": swapped.duration_seconds,
-                        "decision": "SWAP",
-                        "original_category": ad_candidate.category,
-                    })
+                    swap_ad = _pick_swap_ad(user, ads, ad_candidate.id,
+                                            exclude_category=live_ctx.last_shown_ad_category)
+                    if swap_ad is None:
+                        decision = AdDecision.SUPPRESS
+                        final_ad = ad_candidate
+                    else:
+                        final_ad = swap_ad
+                elif decision == AdDecision.DELAY:
+                    delayed_queue.append((ad_candidate, minute))
+                    final_ad = ad_candidate
                 else:
-                    records.append({
-                        "break_minute": minute,
-                        "ad_id": ad_candidate.id,
-                        "ad_category": ad_candidate.category,
-                        "advertiser": ad_candidate.advertiser,
-                        "duration_seconds": ad_candidate.duration_seconds,
-                        "decision": "SHOW",
-                    })
+                    final_ad = ad_candidate
 
-            ctx = apply_decision(ctx, user, decision, minute, minutes_gap)
-            minutes_gap = 0
+            record = {
+                "break_minute": minute,
+                "ad_id": final_ad.id,
+                "ad_category": final_ad.category,
+                "advertiser": final_ad.advertiser,
+                "duration_seconds": final_ad.duration_seconds,
+                "decision": decision.value,
+            }
+            if decision == AdDecision.SWAP:
+                record["original_ad_id"] = ad_candidate.id
+                record["original_category"] = ad_candidate.category
+                record["original_advertiser"] = ad_candidate.advertiser
+            records.append(record)
+
+            if decision != AdDecision.DELAY:
+                ctx = apply_decision(ctx, user, decision, minute, minutes_gap,
+                                     ad_category=final_ad.category)
+                minutes_gap = 0
 
         prev_minute = minute
+
+    # Any ads still deferred at end of session: append after last break.
+    if delayed_queue and schedule:
+        last_minute = schedule[-1]["minute"]
+        for deferred_ad, delayed_from_minute in delayed_queue:
+            records.append({
+                "break_minute": last_minute,
+                "ad_id": deferred_ad.id,
+                "ad_category": deferred_ad.category,
+                "advertiser": deferred_ad.advertiser,
+                "duration_seconds": deferred_ad.duration_seconds,
+                "decision": "SHOW",
+                "deferred": True,
+                "delayed_from_minute": delayed_from_minute,
+            })
 
     return records
 
@@ -318,9 +399,16 @@ def start_ab_session(req: ABStartRequest):
         "content_title": content.title,
         "content_profile": content_profile,
         "session_context": session_context,
+        "session_labels": {"X": "Industry Standard", "Y": "AdaptAd"},
+        "industry_standard": session_x_records,
+        "adaptad": session_y_records,
         "session_x": session_x_records,
         "session_y": session_y_records,
-        "instructions": "Rate each session on annoyance, relevance, and willingness to continue (1-10).",
+        "instructions": (
+            "Rate each session on comfort, relevance, and overall experience (1–5). "
+            "Session X = Industry Standard (fixed schedule, always SHOW). "
+            "Session Y = AdaptAd (intelligent SHOW/SWAP/DELAY/SUPPRESS decisions)."
+        ),
     }
 
 
@@ -336,9 +424,10 @@ def submit_rating(session_id: str, req: ABRatingRequest):
     rating = {
         "session_id": session_id,
         "session_label": req.session_label,
-        "annoyance": req.annoyance,
+        "comfort": req.comfort,
         "relevance": req.relevance,
-        "willingness": req.willingness,
+        "overall_experience": req.overall_experience,
+        "preferred_session": req.preferred_session,
         "notes": req.notes,
         "rated_at": datetime.utcnow().isoformat(),
     }
@@ -352,9 +441,10 @@ def submit_rating(session_id: str, req: ABRatingRequest):
         session_id=session_id,
         label=req.session_label,
         x_is_adaptad=session["x_is_adaptad"],
-        annoyance=req.annoyance,
+        comfort=req.comfort,
         relevance=req.relevance,
-        willingness=req.willingness,
+        overall_experience=req.overall_experience,
+        preferred_session=req.preferred_session,
         notes=req.notes,
     )
 
@@ -372,8 +462,9 @@ def get_ab_results():
     baseline_wins = 0
     tie = 0
 
-    adaptad_scores = {"annoyance": [], "relevance": [], "willingness": []}
-    baseline_scores = {"annoyance": [], "relevance": [], "willingness": []}
+    adaptad_scores = {"comfort": [], "relevance": [], "overall_experience": []}
+    baseline_scores = {"comfort": [], "relevance": [], "overall_experience": []}
+    preferred_counts = {"Industry Standard": 0, "AdaptAd": 0, "No preference": 0}
 
     for session in completed:
         x_is_adaptad = session["x_is_adaptad"]
@@ -387,13 +478,25 @@ def get_ab_results():
         adaptad_r = rx if x_is_adaptad else ry
         baseline_r = ry if x_is_adaptad else rx
 
-        for metric in ("annoyance", "relevance", "willingness"):
-            adaptad_scores[metric].append(adaptad_r[metric])
-            baseline_scores[metric].append(baseline_r[metric])
+        for metric in ("comfort", "relevance", "overall_experience"):
+            if metric in adaptad_r:
+                adaptad_scores[metric].append(adaptad_r[metric])
+            if metric in baseline_r:
+                baseline_scores[metric].append(baseline_r[metric])
 
-        # Overall winner: higher willingness + lower annoyance + higher relevance.
-        adaptad_total = adaptad_r["willingness"] + adaptad_r["relevance"] - adaptad_r["annoyance"]
-        baseline_total = baseline_r["willingness"] + baseline_r["relevance"] - baseline_r["annoyance"]
+        # Tally preference votes.
+        for r in (rx, ry):
+            pref = r.get("preferred_session")
+            if pref in preferred_counts:
+                preferred_counts[pref] += 1
+
+        # Overall winner: sum of comfort + relevance + overall_experience.
+        adaptad_total = (
+            adaptad_r.get("comfort", 0) + adaptad_r.get("relevance", 0) + adaptad_r.get("overall_experience", 0)
+        )
+        baseline_total = (
+            baseline_r.get("comfort", 0) + baseline_r.get("relevance", 0) + baseline_r.get("overall_experience", 0)
+        )
 
         if adaptad_total > baseline_total:
             adaptad_wins += 1
@@ -411,6 +514,7 @@ def get_ab_results():
         "adaptad_wins": adaptad_wins,
         "baseline_wins": baseline_wins,
         "ties": tie,
+        "preferred_counts": preferred_counts,
         "adaptad_mean_scores": {k: _mean(v) for k, v in adaptad_scores.items()},
         "baseline_mean_scores": {k: _mean(v) for k, v in baseline_scores.items()},
     }
@@ -539,8 +643,16 @@ def start_custom_ab_session(req: CustomABRequest):
         "content_title": content.title,
         "content_profile": content_profile,
         "session_context": session_context,
+        "session_labels": {"X": "Industry Standard", "Y": "AdaptAd"},
+        "industry_standard": session_x_records,
+        "adaptad": session_y_records,
         "session_x": session_x_records,
         "session_y": session_y_records,
+        "instructions": (
+            "Rate each session on comfort, relevance, and overall experience (1–5). "
+            "Session X = Industry Standard (fixed schedule, always SHOW). "
+            "Session Y = AdaptAd (intelligent SHOW/SWAP/DELAY/SUPPRESS decisions)."
+        ),
     }
 
 

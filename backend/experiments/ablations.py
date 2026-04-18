@@ -24,7 +24,10 @@ def _full_system_policy(chromosome: Chromosome):
             return AdDecision.SUPPRESS
         ua = score_user_advocate(opp.user, opp.ad_candidate, opp.session_context, chromosome)
         adv = score_advertiser_advocate(opp.user, opp.ad_candidate, opp.session_context, chromosome)
-        result = negotiate(ua, adv, chromosome, opp.user.id, opp.ad_candidate.id, opp.opportunity_id)
+        result = negotiate(
+            ua, adv, chromosome, opp.user.id, opp.ad_candidate.id, opp.opportunity_id,
+            session_context=opp.session_context,
+        )
         return result.decision
 
     return policy
@@ -48,12 +51,15 @@ def _ga_only_policy(chromosome: Chromosome):
         adv = score_advertiser_advocate(opp.user, opp.ad_candidate, opp.session_context, chromosome)
         # Equal weighting instead of the tuned 0.55/0.45 split.
         combined = (ua.score + adv.score) / 2.0
-        show_thresh = 0.45 + chromosome.frequency_threshold * 0.35
-        swap_thresh = show_thresh - (0.08 + chromosome.soften_threshold * 0.14)
+        show_thresh  = 0.45 + chromosome.frequency_threshold * 0.35
+        swap_thresh  = show_thresh  - (0.08 + chromosome.swap_relevance_min * 0.14)
+        delay_thresh = swap_thresh  - (0.10 + chromosome.delay_threshold    * 0.10)
         if combined >= show_thresh:
             return AdDecision.SHOW
         elif combined >= swap_thresh:
             return AdDecision.SWAP
+        elif combined >= delay_thresh:
+            return AdDecision.DELAY
         return AdDecision.SUPPRESS
 
     return policy

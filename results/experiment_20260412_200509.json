@@ -1,0 +1,1943 @@
+{
+  "experiment_date": "2026-04-12T20:05:09.403961",
+  "num_runs": 10,
+  "max_generations": 20,
+  "num_users": 200,
+  "elapsed_seconds": 9.78,
+  "baselines": {
+    "always_show": {
+      "satisfaction": 0.3324,
+      "revenue": 0.7812,
+      "fatigue": 0.2654,
+      "fitness": 0.5119,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 1149,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 0
+      }
+    },
+    "random": {
+      "satisfaction": 0.4921,
+      "revenue": 0.4109,
+      "fatigue": 0.2566,
+      "fitness": 0.4596,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 591,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 558
+      }
+    },
+    "frequency_cap": {
+      "satisfaction": 0.482,
+      "revenue": 0.3589,
+      "fatigue": 0.2553,
+      "fitness": 0.4328,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 514,
+        "SOFTEN": 0,
+        "DELAY": 0,
+        "SUPPRESS": 635
+      }
+    }
+  },
+  "evolved": {
+    "fitnesses": [
+      0.5076,
+      0.5114,
+      0.5122,
+      0.5078,
+      0.5077,
+      0.5112,
+      0.512,
+      0.5091,
+      0.5101,
+      0.5073
+    ],
+    "mean_fitness": 0.5096,
+    "mean_satisfaction": 0.3441,
+    "mean_revenue": 0.7579,
+    "mean_fatigue": 0.2606,
+    "mean_diversity": 0.3068,
+    "best_chromosome": [
+      0.3967,
+      0.9936,
+      0.2995,
+      0.1909,
+      0.4959,
+      0.033,
+      1.0,
+      0.3257
+    ]
+  },
+  "ablations": {
+    "full_system": {
+      "satisfaction": 0.3902,
+      "revenue": 0.6702,
+      "fatigue": 0.255,
+      "fitness": 0.5022,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 579,
+        "SOFTEN": 459,
+        "DELAY": 111,
+        "SUPPRESS": 0
+      }
+    },
+    "ga_only": {
+      "satisfaction": 0.3633,
+      "revenue": 0.7148,
+      "fatigue": 0.2563,
+      "fitness": 0.5039,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 677,
+        "SOFTEN": 447,
+        "DELAY": 25,
+        "SUPPRESS": 0
+      }
+    },
+    "agents_no_ga": {
+      "satisfaction": 0.3902,
+      "revenue": 0.6702,
+      "fatigue": 0.255,
+      "fitness": 0.5022,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 579,
+        "SOFTEN": 459,
+        "DELAY": 111,
+        "SUPPRESS": 0
+      }
+    },
+    "user_advocate_only": {
+      "satisfaction": 0.5875,
+      "revenue": 0.3165,
+      "fatigue": 0.2521,
+      "fitness": 0.4791,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 114,
+        "SOFTEN": 288,
+        "DELAY": 592,
+        "SUPPRESS": 155
+      }
+    },
+    "advertiser_advocate_only": {
+      "satisfaction": 0.3325,
+      "revenue": 0.7806,
+      "fatigue": 0.2653,
+      "fitness": 0.5118,
+      "total_decisions": 1149,
+      "decision_counts": {
+        "SHOW": 1145,
+        "SOFTEN": 4,
+        "DELAY": 0,
+        "SUPPRESS": 0
+      }
+    }
+  },
+  "h1": {
+    "passes": false,
+    "threshold": 0.65,
+    "mean": 0.5096,
+    "std": 0.002,
+    "n_runs": 10,
+    "baseline_comparisons": {
+      "always_show": {
+        "baseline_fitness": 0.5119,
+        "prop_runs_better": 0.2,
+        "mean_delta": -0.0023
+      },
+      "random": {
+        "baseline_fitness": 0.4596,
+        "prop_runs_better": 1.0,
+        "mean_delta": 0.05
+      },
+      "frequency_cap": {
+        "baseline_fitness": 0.4328,
+        "prop_runs_better": 1.0,
+        "mean_delta": 0.0768
+      }
+    }
+  },
+  "h2": {
+    "fatigue_passes": true,
+    "relevance_passes": false,
+    "fatigue_threshold": 0.4,
+    "relevance_threshold": 0.7,
+    "mean_fatigue": 0.2606,
+    "mean_satisfaction": 0.3441,
+    "prop_runs_fatigue_pass": 1.0,
+    "prop_runs_relevance_pass": 0.0
+  },
+  "h3": {
+    "passes": true,
+    "threshold": 0.15,
+    "mean": 0.3068,
+    "std": 0.1356,
+    "prop_runs_pass": 0.8,
+    "n_runs": 10
+  },
+  "statistical_tests": {
+    "h1_one_sample": {
+      "statistic": 0.0,
+      "p_value": 1.0,
+      "method": "wilcoxon"
+    },
+    "h1_pvalue": 1.0,
+    "h1_significant": false,
+    "pairwise_vs_baselines": {
+      "vs_always_show": {
+        "statistic": 3.0,
+        "p_value": 0.9971,
+        "method": "wilcoxon",
+        "holm_bonferroni_reject": false
+      },
+      "vs_random": {
+        "statistic": 55.0,
+        "p_value": 0.001,
+        "method": "wilcoxon",
+        "holm_bonferroni_reject": true
+      },
+      "vs_frequency_cap": {
+        "statistic": 55.0,
+        "p_value": 0.001,
+        "method": "wilcoxon",
+        "holm_bonferroni_reject": true
+      }
+    },
+    "method_note": "Wilcoxon signed-rank used when scipy available. Sign test fallback otherwise. Holm-Bonferroni applied to multiple comparisons."
+  },
+  "generation_histories": [
+    {
+      "run": 0,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.479146,
+          "avg_fitness": 0.449921,
+          "diversity": 0.8391,
+          "converged": false,
+          "best_chromosome": [
+            0.0,
+            0.9982,
+            0.6932,
+            0.1046,
+            0.5108,
+            0.2101,
+            0.5627,
+            0.6397
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.463046,
+          "diversity": 0.7556,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 3,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.466306,
+          "diversity": 0.6845,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 4,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.468734,
+          "diversity": 0.5932,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 5,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.469365,
+          "diversity": 0.542,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 6,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.470321,
+          "diversity": 0.4674,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 7,
+          "best_fitness": 0.483497,
+          "avg_fitness": 0.470051,
+          "diversity": 0.3862,
+          "converged": false,
+          "best_chromosome": [
+            0.0611,
+            0.8502,
+            0.7448,
+            0.1426,
+            0.846,
+            0.1306,
+            0.8888,
+            0.9913
+          ]
+        },
+        {
+          "generation": 8,
+          "best_fitness": 0.486745,
+          "avg_fitness": 0.473218,
+          "diversity": 0.316,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.5964,
+            0.0351,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.6397
+          ]
+        },
+        {
+          "generation": 9,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.473972,
+          "diversity": 0.2071,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 10,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.474325,
+          "diversity": 0.2296,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 11,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.473419,
+          "diversity": 0.2898,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 12,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.474526,
+          "diversity": 0.259,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 13,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.473922,
+          "diversity": 0.2218,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 14,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.473326,
+          "diversity": 0.2897,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 15,
+          "best_fitness": 0.487801,
+          "avg_fitness": 0.472134,
+          "diversity": 0.3245,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            0.9982,
+            0.0961,
+            0.0524,
+            0.1633,
+            0.0569,
+            0.8839,
+            0.3702
+          ]
+        },
+        {
+          "generation": 16,
+          "best_fitness": 0.488515,
+          "avg_fitness": 0.475857,
+          "diversity": 0.3067,
+          "converged": false,
+          "best_chromosome": [
+            0.9005,
+            1.0,
+            0.0961,
+            0.2011,
+            0.5108,
+            0.3761,
+            1.0,
+            0.708
+          ]
+        },
+        {
+          "generation": 17,
+          "best_fitness": 0.488515,
+          "avg_fitness": 0.472981,
+          "diversity": 0.2546,
+          "converged": false,
+          "best_chromosome": [
+            0.9005,
+            1.0,
+            0.0961,
+            0.2011,
+            0.5108,
+            0.3761,
+            1.0,
+            0.708
+          ]
+        },
+        {
+          "generation": 18,
+          "best_fitness": 0.489316,
+          "avg_fitness": 0.474111,
+          "diversity": 0.3043,
+          "converged": false,
+          "best_chromosome": [
+            0.8068,
+            0.9042,
+            0.0961,
+            0.1112,
+            0.0,
+            0.0569,
+            1.0,
+            0.7009
+          ]
+        },
+        {
+          "generation": 19,
+          "best_fitness": 0.489316,
+          "avg_fitness": 0.471063,
+          "diversity": 0.2253,
+          "converged": false,
+          "best_chromosome": [
+            0.8068,
+            0.9042,
+            0.0961,
+            0.1112,
+            0.0,
+            0.0569,
+            1.0,
+            0.7009
+          ]
+        },
+        {
+          "generation": 20,
+          "best_fitness": 0.489316,
+          "avg_fitness": 0.472616,
+          "diversity": 0.2645,
+          "converged": false,
+          "best_chromosome": [
+            0.8068,
+            0.9042,
+            0.0961,
+            0.1112,
+            0.0,
+            0.0569,
+            1.0,
+            0.7009
+          ]
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.481092,
+          "avg_fitness": 0.455803,
+          "diversity": 0.8408,
+          "converged": false,
+          "best_chromosome": [
+            0.3448,
+            0.9315,
+            0.2497,
+            0.3321,
+            0.3676,
+            0.6044,
+            0.7991,
+            0.3392
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.481092,
+          "avg_fitness": 0.464991,
+          "diversity": 0.6013,
+          "converged": false,
+          "best_chromosome": [
+            0.3448,
+            0.9315,
+            0.2497,
+            0.3321,
+            0.3676,
+            0.6044,
+            0.7991,
+            0.3392
+          ]
+        },
+        {
+          "generation": 3,
+          "best_fitness": 0.481092,
+          "avg_fitness": 0.467093,
+          "diversity": 0.5935,
+          "converged": false,
+          "best_chromosome": [
+            0.3448,
+            0.9315,
+            0.2497,
+            0.3321,
+            0.3676,
+            0.6044,
+            0.7991,
+            0.3392
+          ]
+        },
+        {
+          "generation": 4,
+          "best_fitness": 0.482535,
+          "avg_fitness": 0.467996,
+          "diversity": 0.6037,
+          "converged": false,
+          "best_chromosome": [
+            0.874,
+            0.9315,
+            0.1569,
+            0.3321,
+            0.4597,
+            0.5045,
+            0.982,
+            0.3392
+          ]
+        },
+        {
+          "generation": 5,
+          "best_fitness": 0.482535,
+          "avg_fitness": 0.46943,
+          "diversity": 0.5979,
+          "converged": false,
+          "best_chromosome": [
+            0.874,
+            0.9315,
+            0.1569,
+            0.3321,
+            0.4597,
+            0.5045,
+            0.982,
+            0.3392
+          ]
+        },
+        {
+          "generation": 6,
+          "best_fitness": 0.482535,
+          "avg_fitness": 0.467889,
+          "diversity": 0.5595,
+          "converged": false,
+          "best_chromosome": [
+            0.874,
+            0.9315,
+            0.1569,
+            0.3321,
+            0.4597,
+            0.5045,
+            0.982,
+            0.3392
+          ]
+        },
+        {
+          "generation": 7,
+          "best_fitness": 0.484812,
+          "avg_fitness": 0.472487,
+          "diversity": 0.4861,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.9337,
+            0.0326,
+            0.3676,
+            0.1462,
+            0.7991,
+            0.0835
+          ]
+        },
+        {
+          "generation": 8,
+          "best_fitness": 0.484812,
+          "avg_fitness": 0.471861,
+          "diversity": 0.4438,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.9337,
+            0.0326,
+            0.3676,
+            0.1462,
+            0.7991,
+            0.0835
+          ]
+        },
+        {
+          "generation": 9,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.473604,
+          "diversity": 0.355,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 10,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.472249,
+          "diversity": 0.3266,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 11,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.471513,
+          "diversity": 0.3297,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 12,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.471808,
+          "diversity": 0.4131,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 13,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.472481,
+          "diversity": 0.4173,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 14,
+          "best_fitness": 0.48489,
+          "avg_fitness": 0.470919,
+          "diversity": 0.4372,
+          "converged": false,
+          "best_chromosome": [
+            0.2525,
+            0.744,
+            0.1569,
+            0.4236,
+            0.1959,
+            0.218,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 15,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.469888,
+          "diversity": 0.426,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 16,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.468673,
+          "diversity": 0.4396,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 17,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.472139,
+          "diversity": 0.4781,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 18,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.469664,
+          "diversity": 0.5316,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 19,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.471422,
+          "diversity": 0.4468,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        },
+        {
+          "generation": 20,
+          "best_fitness": 0.491993,
+          "avg_fitness": 0.470245,
+          "diversity": 0.4153,
+          "converged": false,
+          "best_chromosome": [
+            0.9281,
+            0.744,
+            0.1569,
+            0.0,
+            0.5461,
+            0.0,
+            0.982,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.47994,
+          "avg_fitness": 0.44437,
+          "diversity": 0.881,
+          "converged": false,
+          "best_chromosome": [
+            0.3962,
+            0.9287,
+            0.2531,
+            0.3925,
+            0.7891,
+            0.033,
+            0.8857,
+            0.3257
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.48216,
+          "avg_fitness": 0.462457,
+          "diversity": 0.656,
+          "converged": false,
+          "best_chromosome": [
+            0.4958,
+            0.9287,
+            0.732,
+            0.1035,
+            0.5637,
+            0.033,
+            0.8857,
+            0.6578
+          ]
+        },
+        {
+          "generation": 3,
+          "best_fitness": 0.484267,
+          "avg_fitness": 0.46671,
+          "diversity": 0.5696,
+          "converged": false,
+          "best_chromosome": [
+            0.4958,
+            0.9287,
+            0.732,
+            0.1035,
+            0.5637,
+            0.033,
+            0.8857,
+            0.6578
+          ]
+        },
+        {
+          "generation": 4,
+          "best_fitness": 0.484267,
+          "avg_fitness": 0.472552,
+          "diversity": 0.3207,
+          "converged": false,
+          "best_chromosome": [
+            0.4958,
+            0.9287,
+            0.732,
+            0.1035,
+            0.5637,
+            0.033,
+            0.8857,
+            0.6578
+          ]
+        },
+        {
+          "generation": 5,
+          "best_fitness": 0.484267,
+          "avg_fitness": 0.471213,
+          "diversity": 0.232,
+          "converged": false,
+          "best_chromosome": [
+            0.4958,
+            0.9287,
+            0.732,
+            0.1035,
+            0.5637,
+            0.033,
+            0.8857,
+            0.6578
+          ]
+        },
+        {
+          "generation": 6,
+          "best_fitness": 0.487743,
+          "avg_fitness": 0.473472,
+          "diversity": 0.2217,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.2531,
+            0.1258,
+            0.5522,
+            0.033,
+            1.0,
+            0.5083
+          ]
+        },
+        {
+          "generation": 7,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.473935,
+          "diversity": 0.2032,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 8,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.474048,
+          "diversity": 0.2,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 9,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.473795,
+          "diversity": 0.1526,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 10,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.473876,
+          "diversity": 0.1659,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 11,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.474152,
+          "diversity": 0.2236,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 12,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.474879,
+          "diversity": 0.1863,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 13,
+          "best_fitness": 0.488507,
+          "avg_fitness": 0.473181,
+          "diversity": 0.1848,
+          "converged": false,
+          "best_chromosome": [
+            0.9471,
+            0.9287,
+            0.0208,
+            0.1258,
+            0.7891,
+            0.033,
+            1.0,
+            0.2222
+          ]
+        },
+        {
+          "generation": 14,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.47608,
+          "diversity": 0.1517,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 15,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.473967,
+          "diversity": 0.1586,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 16,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.474688,
+          "diversity": 0.1428,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 17,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.473605,
+          "diversity": 0.1264,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 18,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.473797,
+          "diversity": 0.1654,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 19,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.475679,
+          "diversity": 0.1287,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        },
+        {
+          "generation": 20,
+          "best_fitness": 0.492442,
+          "avg_fitness": 0.473904,
+          "diversity": 0.1344,
+          "converged": false,
+          "best_chromosome": [
+            0.3967,
+            0.9936,
+            0.2995,
+            0.1909,
+            0.4959,
+            0.033,
+            1.0,
+            0.3257
+          ]
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.468953,
+          "avg_fitness": 0.435989,
+          "diversity": 0.8745,
+          "converged": false,
+          "best_chromosome": [
+            0.7705,
+            0.7833,
+            0.2418,
+            0.0906,
+            0.0128,
+            0.606,
+            0.7452,
+            0.2277
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.477573,
+          "avg_fitness": 0.452483,
+          "diversity": 0.7232,
+          "converged": false,
+          "best_chromosome": [
+            0.7705,
+            0.7833,
+            0.2418,
+            0.0906,
+            0.0128,
+            0.606,
+            0.7452,
+            0.2277
+          ]
+        },
+        {
+          "generation": 3,
+          "best_fitness": 0.477573,
+          "avg_fitness": 0.46072,
+          "diversity": 0.5703,
+          "converged": false,
+          "best_chromosome": [
+            0.7705,
+            0.7833,
+            0.2418,
+            0.0906,
+            0.0128,
+            0.606,
+            0.7452,
+            0.2277
+          ]
+        },
+        {
+          "generation": 4,
+          "best_fitness": 0.477573,
+          "avg_fitness": 0.46456,
+          "diversity": 0.4169,
+          "converged": false,
+          "best_chromosome": [
+            0.7705,
+            0.7833,
+            0.2418,
+            0.0906,
+            0.0128,
+            0.606,
+            0.7452,
+            0.2277
+          ]
+        },
+        {
+          "generation": 5,
+          "best_fitness": 0.485478,
+          "avg_fitness": 0.471042,
+          "diversity": 0.286,
+          "converged": false,
+          "best_chromosome": [
+            0.692,
+            0.7823,
+            0.2693,
+            0.0914,
+            0.4833,
+            0.2974,
+            0.9017,
+            0.0094
+          ]
+        },
+        {
+          "generation": 6,
+          "best_fitness": 0.485478,
+          "avg_fitness": 0.472555,
+          "diversity": 0.2103,
+          "converged": false,
+          "best_chromosome": [
+            0.692,
+            0.7823,
+            0.2693,
+            0.0914,
+            0.4833,
+            0.2974,
+            0.9017,
+            0.0094
+          ]
+        },
+        {
+          "generation": 7,
+          "best_fitness": 0.485478,
+          "avg_fitness": 0.472635,
+          "diversity": 0.2686,
+          "converged": false,
+          "best_chromosome": [
+            0.692,
+            0.7823,
+            0.2693,
+            0.0914,
+            0.4833,
+            0.2974,
+            0.9017,
+            0.0094
+          ]
+        },
+        {
+          "generation": 8,
+          "best_fitness": 0.485478,
+          "avg_fitness": 0.472823,
+          "diversity": 0.3426,
+          "converged": false,
+          "best_chromosome": [
+            0.692,
+            0.7823,
+            0.2693,
+            0.0914,
+            0.4833,
+            0.2974,
+            0.9017,
+            0.0094
+          ]
+        },
+        {
+          "generation": 9,
+          "best_fitness": 0.48576,
+          "avg_fitness": 0.473172,
+          "diversity": 0.3201,
+          "converged": false,
+          "best_chromosome": [
+            0.8989,
+            1.0,
+            0.0138,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0094
+          ]
+        },
+        {
+          "generation": 10,
+          "best_fitness": 0.48576,
+          "avg_fitness": 0.474,
+          "diversity": 0.2533,
+          "converged": false,
+          "best_chromosome": [
+            0.8989,
+            1.0,
+            0.0138,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0094
+          ]
+        },
+        {
+          "generation": 11,
+          "best_fitness": 0.48576,
+          "avg_fitness": 0.47483,
+          "diversity": 0.231,
+          "converged": false,
+          "best_chromosome": [
+            0.8989,
+            1.0,
+            0.0138,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0094
+          ]
+        },
+        {
+          "generation": 12,
+          "best_fitness": 0.48576,
+          "avg_fitness": 0.473925,
+          "diversity": 0.1802,
+          "converged": false,
+          "best_chromosome": [
+            0.8989,
+            1.0,
+            0.0138,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0094
+          ]
+        },
+        {
+          "generation": 13,
+          "best_fitness": 0.490621,
+          "avg_fitness": 0.476341,
+          "diversity": 0.1188,
+          "converged": false,
+          "best_chromosome": [
+            0.829,
+            0.7279,
+            0.0138,
+            0.1846,
+            0.6569,
+            0.0,
+            1.0,
+            0.1762
+          ]
+        },
+        {
+          "generation": 14,
+          "best_fitness": 0.490621,
+          "avg_fitness": 0.474338,
+          "diversity": 0.1097,
+          "converged": false,
+          "best_chromosome": [
+            0.829,
+            0.7279,
+            0.0138,
+            0.1846,
+            0.6569,
+            0.0,
+            1.0,
+            0.1762
+          ]
+        },
+        {
+          "generation": 15,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.47546,
+          "diversity": 0.0951,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        },
+        {
+          "generation": 16,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.473704,
+          "diversity": 0.1216,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        },
+        {
+          "generation": 17,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.474428,
+          "diversity": 0.1555,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        },
+        {
+          "generation": 18,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.475474,
+          "diversity": 0.1021,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        },
+        {
+          "generation": 19,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.474393,
+          "diversity": 0.1472,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        },
+        {
+          "generation": 20,
+          "best_fitness": 0.490935,
+          "avg_fitness": 0.473886,
+          "diversity": 0.1362,
+          "converged": false,
+          "best_chromosome": [
+            1.0,
+            1.0,
+            0.191,
+            0.2529,
+            0.5473,
+            0.0,
+            0.9769,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 4,
+      "history": [
+        {
+          "generation": 1,
+          "best_fitness": 0.47992,
+          "avg_fitness": 0.447516,
+          "diversity": 0.8074,
+          "converged": false,
+          "best_chromosome": [
+            0.1361,
+            0.9313,
+            0.9856,
+            0.387,
+            0.3079,
+            0.0483,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 2,
+          "best_fitness": 0.47992,
+          "avg_fitness": 0.457211,
+          "diversity": 0.6155,
+          "converged": false,
+          "best_chromosome": [
+            0.1361,
+            0.9313,
+            0.9856,
+            0.387,
+            0.3079,
+            0.0483,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 3,
+          "best_fitness": 0.47992,
+          "avg_fitness": 0.460112,
+          "diversity": 0.6528,
+          "converged": false,
+          "best_chromosome": [
+            0.1361,
+            0.9313,
+            0.9856,
+            0.387,
+            0.3079,
+            0.0483,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 4,
+          "best_fitness": 0.482689,
+          "avg_fitness": 0.47012,
+          "diversity": 0.392,
+          "converged": false,
+          "best_chromosome": [
+            0.2607,
+            0.679,
+            0.0214,
+            0.1165,
+            0.3079,
+            0.0483,
+            0.7252,
+            0.2897
+          ]
+        },
+        {
+          "generation": 5,
+          "best_fitness": 0.483358,
+          "avg_fitness": 0.471239,
+          "diversity": 0.3853,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.5764,
+            0.5054,
+            0.0035,
+            0.0483,
+            1.0,
+            0.6514
+          ]
+        },
+        {
+          "generation": 6,
+          "best_fitness": 0.483358,
+          "avg_fitness": 0.471828,
+          "diversity": 0.3359,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.5764,
+            0.5054,
+            0.0035,
+            0.0483,
+            1.0,
+            0.6514
+          ]
+        },
+        {
+          "generation": 7,
+          "best_fitness": 0.483484,
+          "avg_fitness": 0.471857,
+          "diversity": 0.2816,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.0214,
+            0.0648,
+            0.0273,
+            0.0483,
+            0.7252,
+            0.6514
+          ]
+        },
+        {
+          "generation": 8,
+          "best_fitness": 0.485645,
+          "avg_fitness": 0.471882,
+          "diversity": 0.281,
+          "converged": false,
+          "best_chromosome": [
+            0.2742,
+            0.9313,
+            0.2227,
+            0.4082,
+            0.3079,
+            0.0776,
+            0.9655,
+            0.2106
+          ]
+        },
+        {
+          "generation": 9,
+          "best_fitness": 0.485645,
+          "avg_fitness": 0.473236,
+          "diversity": 0.3256,
+          "converged": false,
+          "best_chromosome": [
+            0.2742,
+            0.9313,
+            0.2227,
+            0.4082,
+            0.3079,
+            0.0776,
+            0.9655,
+            0.2106
+          ]
+        },
+        {
+          "generation": 10,
+          "best_fitness": 0.485645,
+          "avg_fitness": 0.474472,
+          "diversity": 0.2314,
+          "converged": false,
+          "best_chromosome": [
+            0.2742,
+            0.9313,
+            0.2227,
+            0.4082,
+            0.3079,
+            0.0776,
+            0.9655,
+            0.2106
+          ]
+        },
+        {
+          "generation": 11,
+          "best_fitness": 0.485645,
+          "avg_fitness": 0.472036,
+          "diversity": 0.2523,
+          "converged": false,
+          "best_chromosome": [
+            0.2742,
+            0.9313,
+            0.2227,
+            0.4082,
+            0.3079,
+            0.0776,
+            0.9655,
+            0.2106
+          ]
+        },
+        {
+          "generation": 12,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.47579,
+          "diversity": 0.2355,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 13,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.472906,
+          "diversity": 0.2437,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 14,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.474572,
+          "diversity": 0.2392,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 15,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.47212,
+          "diversity": 0.237,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 16,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.472092,
+          "diversity": 0.2338,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 17,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.473576,
+          "diversity": 0.1608,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 18,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.472959,
+          "diversity": 0.1921,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 19,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.472122,
+          "diversity": 0.215,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        },
+        {
+          "generation": 20,
+          "best_fitness": 0.490433,
+          "avg_fitness": 0.472547,
+          "diversity": 0.1945,
+          "converged": false,
+          "best_chromosome": [
+            0.0329,
+            0.9313,
+            0.2227,
+            0.5054,
+            0.0035,
+            0.3113,
+            0.9655,
+            0.6514
+          ]
+        }
+      ]
+    }
+  ]
+}

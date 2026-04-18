@@ -1,6 +1,6 @@
 const GENE_NAMES = [
   'fatigue_weight', 'relevance_weight', 'timing_weight', 'frequency_threshold',
-  'delay_probability', 'soften_threshold', 'category_boost', 'session_depth_factor',
+  'delay_threshold', 'swap_relevance_min', 'category_boost', 'session_depth_factor',
 ]
 
 const GENE_LABELS: Record<string, string> = {
@@ -8,8 +8,8 @@ const GENE_LABELS: Record<string, string> = {
   relevance_weight: 'Relevance Weight',
   timing_weight: 'Timing Weight',
   frequency_threshold: 'Frequency Threshold',
-  delay_probability: 'Delay Probability',
-  soften_threshold: 'Soften Threshold',
+  delay_threshold: 'Delay Threshold',
+  swap_relevance_min: 'Swap Relevance Min',
   category_boost: 'Category Boost',
   session_depth_factor: 'Session Depth',
 }
@@ -35,15 +35,15 @@ const GENE_DESCRIPTIONS: Record<string, { what: string; high: string; low: strin
     high: 'Stricter gate — fewer ads pass, better user experience.',
     low: 'Looser gate — more ads are shown.',
   },
-  delay_probability: {
-    what: 'How aggressively the system seeks a better ad when conditions are marginal.',
-    high: 'More likely to attempt a swap before falling back to suppress.',
-    low: 'Marginal opportunities are suppressed rather than swapped.',
+  delay_threshold: {
+    what: 'Width of the DELAY band — how often a marginal ad is deferred to the next break.',
+    high: 'Wide delay zone — system frequently defers borderline ads.',
+    low: 'Narrow delay zone — borderline ads are suppressed instead of deferred.',
   },
-  soften_threshold: {
-    what: 'Width of the SWAP zone — how often an irrelevant ad is replaced with a better one.',
-    high: 'Wide swap zone — system frequently replaces poorly-matched ads.',
-    low: 'Narrow swap zone — only near-show-quality opportunities trigger a swap.',
+  swap_relevance_min: {
+    what: 'Minimum relevance bar required before committing to a SWAP.',
+    high: 'Only swaps when a strongly relevant replacement exists.',
+    low: 'Swaps aggressively even for loosely matched replacements.',
   },
   category_boost: {
     what: 'How much advertiser value is amplified when the ad category matches the user.',

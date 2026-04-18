@@ -88,9 +88,10 @@ async def init_db(path: Optional[str] = None) -> None:
                 session_id TEXT NOT NULL,
                 session_label TEXT NOT NULL,
                 is_adaptad INTEGER,
-                annoyance INTEGER,
+                comfort INTEGER,
                 relevance INTEGER,
-                willingness INTEGER,
+                overall_experience INTEGER,
+                preferred_session TEXT,
                 score INTEGER,
                 notes TEXT,
                 rated_at TEXT NOT NULL
@@ -134,9 +135,12 @@ def _migrate_ab_tables(db_path: str) -> None:
         ("is_custom",         "INTEGER DEFAULT 0"),
     ]
     new_rating_cols = [
-        ("is_adaptad", "INTEGER"),
-        ("score",      "INTEGER"),
-        ("notes",      "TEXT"),
+        ("is_adaptad",         "INTEGER"),
+        ("comfort",            "INTEGER"),
+        ("overall_experience", "INTEGER"),
+        ("preferred_session",  "TEXT"),
+        ("score",              "INTEGER"),
+        ("notes",              "TEXT"),
     ]
     try:
         con = sqlite3.connect(db_path)
@@ -200,23 +204,23 @@ def save_ab_session_sync(session: dict) -> None:
 
 
 def save_ab_rating_sync(session_id: str, label: str, x_is_adaptad: bool,
-                        annoyance: int, relevance: int, willingness: int,
-                        notes: Optional[str] = None) -> None:
+                        comfort: int, relevance: int, overall_experience: int,
+                        preferred_session: str, notes: Optional[str] = None) -> None:
     """Persist an AB rating to SQLite synchronously."""
     import sqlite3
     db_path = get_db_path()
     is_adaptad = (label == "X" and x_is_adaptad) or (label == "Y" and not x_is_adaptad)
-    score = willingness + relevance - annoyance
+    score = comfort + relevance + overall_experience
     try:
         con = sqlite3.connect(db_path)
         con.execute("""
             INSERT INTO ab_ratings
-            (session_id, session_label, is_adaptad, annoyance, relevance,
-             willingness, score, notes, rated_at)
-            VALUES (?,?,?,?,?,?,?,?,?)
+            (session_id, session_label, is_adaptad, comfort, relevance,
+             overall_experience, preferred_session, score, notes, rated_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?)
         """, (
             session_id, label, 1 if is_adaptad else 0,
-            annoyance, relevance, willingness, score,
+            comfort, relevance, overall_experience, preferred_session, score,
             notes, datetime.utcnow().isoformat(),
         ))
         # Mark session completed if both labels rated.
@@ -243,14 +247,16 @@ def get_ab_history_sync(limit: int = 100) -> list[dict]:
                    s.user_interests, s.user_ad_tolerance,
                    s.content_title, s.content_genre, s.content_language,
                    s.x_is_adaptad, s.is_custom, s.created_at,
-                   r_adapt.score  AS adaptad_score,
-                   r_base.score   AS baseline_score,
-                   r_adapt.annoyance  AS adaptad_annoyance,
-                   r_adapt.relevance  AS adaptad_relevance,
-                   r_adapt.willingness AS adaptad_willingness,
-                   r_base.annoyance   AS baseline_annoyance,
-                   r_base.relevance   AS baseline_relevance,
-                   r_base.willingness AS baseline_willingness
+                   r_adapt.score              AS adaptad_score,
+                   r_base.score               AS baseline_score,
+                   r_adapt.comfort            AS adaptad_comfort,
+                   r_adapt.relevance          AS adaptad_relevance,
+                   r_adapt.overall_experience AS adaptad_overall,
+                   r_adapt.preferred_session  AS adaptad_preferred,
+                   r_base.comfort             AS baseline_comfort,
+                   r_base.relevance           AS baseline_relevance,
+                   r_base.overall_experience  AS baseline_overall,
+                   r_base.preferred_session   AS baseline_preferred
             FROM ab_sessions s
             LEFT JOIN ab_ratings r_adapt ON r_adapt.session_id = s.id AND r_adapt.is_adaptad = 1
             LEFT JOIN ab_ratings r_base  ON r_base.session_id  = s.id AND r_base.is_adaptad  = 0
@@ -280,8 +286,8 @@ def get_ab_history_sync(limit: int = 100) -> list[dict]:
                 "created_at":       r["created_at"],
                 "adaptad_score":    adapt_score,
                 "baseline_score":   base_score,
-                "adaptad_ratings":  {"annoyance": r["adaptad_annoyance"], "relevance": r["adaptad_relevance"], "willingness": r["adaptad_willingness"]},
-                "baseline_ratings": {"annoyance": r["baseline_annoyance"], "relevance": r["baseline_relevance"], "willingness": r["baseline_willingness"]},
+                "adaptad_ratings":  {"comfort": r["adaptad_comfort"], "relevance": r["adaptad_relevance"], "overall_experience": r["adaptad_overall"], "preferred_session": r["adaptad_preferred"]},
+                "baseline_ratings": {"comfort": r["baseline_comfort"], "relevance": r["baseline_relevance"], "overall_experience": r["baseline_overall"], "preferred_session": r["baseline_preferred"]},
                 "winner":           winner,
             })
         con.close()

@@ -93,9 +93,14 @@ def score_outcome(
             satisfaction = 0.15
             revenue = 0.50
     elif decision == AdDecision.SWAP:
-        # System replaced the scheduled ad with the most relevant one for this user.
-        satisfaction = 0.63
-        revenue = 0.72
+        # SWAP always plays a relevant ad — score accordingly.
+        satisfaction = 0.65 if fatigue < 0.5 else 0.45
+        revenue = 0.75
+    elif decision == AdDecision.DELAY:
+        # Ad deferred to next break — viewer gets a temporary break.
+        # Revenue scored at 0 here; the deferred play earns SHOW revenue at next break.
+        satisfaction = 0.58
+        revenue = 0.0
     else:  # SUPPRESS
         satisfaction = 0.70
         revenue = 0.02
@@ -157,37 +162,81 @@ def evaluate_policy(
                 all_end_fatigues.append(user.fatigue_level)
                 continue
 
-            # Running context carries ads_shown and fatigue across break points.
-            # This is the fix for the pre-computed ads_seen_so_far bug:
-            # each opportunity gets the LIVE running context before policy evaluation.
             running_ctx = opportunities[0].session_context.model_copy()
             prev_minute = 0
+            deferred_ads: list[AdCandidate] = []
 
             for opp in opportunities:
-                # Merge static opportunity context with running counters.
-                live_opp = opp.model_copy(update={"session_context": running_ctx.model_copy(
-                    update={"current_minute": opp.session_context.current_minute}
-                )})
+                current_minute = opp.session_context.current_minute
 
-                # Force suppress if session fatigue is at the ceiling.
+                # Play deferred ads from previous DELAY decisions first.
+                for deferred_ad in deferred_ads:
+                    deferred_opp = opp.model_copy(update={
+                        "ad_candidate": deferred_ad,
+                        "session_context": running_ctx.model_copy(
+                            update={"current_minute": current_minute}
+                        ),
+                    })
+                    sat, rev = score_outcome(AdDecision.SHOW, deferred_opp)
+                    all_satisfactions.append(sat)
+                    all_revenues.append(rev)
+                    decision_counts[AdDecision.SHOW.value] += 1
+                    running_ctx = apply_decision(
+                        running_ctx, user, AdDecision.SHOW, current_minute, 0,
+                        ad_category=deferred_ad.category,
+                    )
+                deferred_ads.clear()
+
+                live_ctx = running_ctx.model_copy(update={"current_minute": current_minute})
+                live_opp = opp.model_copy(update={"session_context": live_ctx})
+
                 if should_force_suppress(running_ctx):
                     decision = AdDecision.SUPPRESS
                 else:
+                    # Same-category back-to-back guard.
+                    ad = opp.ad_candidate
+                    if (live_ctx.last_shown_ad_category is not None
+                            and ad.category == live_ctx.last_shown_ad_category):
+                        alt = next(
+                            (a for a in ad_pool
+                             if a.category != live_ctx.last_shown_ad_category and a.id != ad.id),
+                            None,
+                        )
+                        if alt:
+                            live_opp = live_opp.model_copy(update={"ad_candidate": alt})
+                        else:
+                            decision = AdDecision.SUPPRESS
+                            sat, rev = score_outcome(decision, live_opp)
+                            all_satisfactions.append(sat)
+                            all_revenues.append(rev)
+                            decision_counts[decision.value] += 1
+                            minutes_gap = max(0, current_minute - prev_minute)
+                            running_ctx = apply_decision(
+                                running_ctx, user, decision, current_minute, minutes_gap
+                            )
+                            prev_minute = current_minute
+                            continue
+
                     decision = policy_fn(live_opp)
+
+                if decision == AdDecision.DELAY:
+                    deferred_ads.append(live_opp.ad_candidate)
 
                 sat, rev = score_outcome(decision, live_opp)
                 all_satisfactions.append(sat)
                 all_revenues.append(rev)
                 decision_counts[decision.value] += 1
 
-                # Advance running context (updates ads_shown and fatigue).
-                minutes_gap = max(0, opp.session_context.current_minute - prev_minute)
+                minutes_gap = max(0, current_minute - prev_minute)
                 running_ctx = apply_decision(
                     running_ctx, user, decision,
-                    opp.session_context.current_minute,
+                    current_minute,
                     minutes_gap,
+                    ad_category=live_opp.ad_candidate.category,
                 )
-                prev_minute = opp.session_context.current_minute
+                prev_minute = current_minute
+
+            # Any ads still deferred at end of session are dropped.
 
             all_end_fatigues.append(running_ctx.session_fatigue_accumulator)
 

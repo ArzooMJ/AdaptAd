@@ -98,6 +98,9 @@ def simulate_session_route(req: SimulateRequest):
         )
         live_opp = opp.model_copy(update={"session_context": live_ctx})
 
+        ad_candidate = opp.ad_candidate
+        minutes_gap = max(0, opp.session_context.current_minute - prev_minute)
+
         if should_force_suppress(live_ctx):
             decision = AdDecision.SUPPRESS
             from datetime import datetime
@@ -114,16 +117,69 @@ def simulate_session_route(req: SimulateRequest):
                 decision=decision, user_advocate=ua, advertiser_advocate=adv,
                 combined_score=0.0, reasoning="Fatigue > 0.85. Forced suppress.",
                 timestamp=datetime.utcnow(), session_id=session_id,
-                user_id=user.id, ad_id=opp.ad_candidate.id,
+                user_id=user.id, ad_id=ad_candidate.id,
             )
         else:
-            ua = score_user_advocate(user, opp.ad_candidate, live_ctx, chromosome)
-            adv = score_advertiser_advocate(user, opp.ad_candidate, live_ctx, chromosome)
-            result = negotiate(ua, adv, chromosome, user.id, opp.ad_candidate.id, session_id)
+            # Same-category back-to-back guard.
+            if (live_ctx.last_shown_ad_category is not None
+                    and ad_candidate.category == live_ctx.last_shown_ad_category):
+                all_ads = get_ads()
+                alt_candidates = [
+                    a for a in all_ads
+                    if a.category != live_ctx.last_shown_ad_category and a.id != ad_candidate.id
+                ]
+                if alt_candidates:
+                    ad_candidate = max(alt_candidates, key=lambda a: a.priority)
+                else:
+                    from datetime import datetime
+                    from ..state import AgentScore, NegotiationResult
+                    dummy_ua = AgentScore(agent_name="User Advocate", score=0.0,
+                                         reasoning="Same-category back-to-back suppressed.", factors={})
+                    dummy_adv = AgentScore(agent_name="Advertiser Advocate", score=0.0,
+                                          reasoning="Same-category back-to-back suppressed.", factors={})
+                    result = NegotiationResult(
+                        decision=AdDecision.SUPPRESS, user_advocate=dummy_ua,
+                        advertiser_advocate=dummy_adv, combined_score=0.0,
+                        reasoning="Suppressed: same ad category shown back-to-back.",
+                        timestamp=datetime.utcnow(), session_id=session_id,
+                        user_id=user.id, ad_id=ad_candidate.id,
+                    )
+                    decision_counts[AdDecision.SUPPRESS.value] += 1
+                    running_ctx = apply_decision(
+                        running_ctx, user, AdDecision.SUPPRESS,
+                        opp.session_context.current_minute, minutes_gap,
+                    )
+                    prev_minute = opp.session_context.current_minute
+                    decision_records.append({
+                        "break_minute": opp.session_context.current_minute,
+                        "break_point_quality": None,
+                        "ad_id": ad_candidate.id,
+                        "ad_category": ad_candidate.category,
+                        "ad_duration": ad_candidate.duration_seconds,
+                        "decision": AdDecision.SUPPRESS.value,
+                        "combined_score": 0.0,
+                        "user_advocate_score": 0.0,
+                        "advertiser_advocate_score": 0.0,
+                        "reasoning": "Suppressed: same ad category shown back-to-back.",
+                        "fatigue_at_break": round(running_ctx.session_fatigue_accumulator, 4),
+                        "ads_shown_before": live_ctx.ads_shown_this_session,
+                    })
+                    continue
+
+            ua = score_user_advocate(user, ad_candidate, live_ctx, chromosome)
+            adv = score_advertiser_advocate(user, ad_candidate, live_ctx, chromosome)
+            result = negotiate(
+                ua, adv, chromosome, user.id, ad_candidate.id, session_id,
+                session_context=live_ctx,
+                minutes_since_last_ad=minutes_gap,
+            )
 
         decision_counts[result.decision.value] += 1
-        minutes_gap = max(0, opp.session_context.current_minute - prev_minute)
-        running_ctx = apply_decision(running_ctx, user, result.decision, opp.session_context.current_minute, minutes_gap)
+        running_ctx = apply_decision(
+            running_ctx, user, result.decision,
+            opp.session_context.current_minute, minutes_gap,
+            ad_category=ad_candidate.category,
+        )
         prev_minute = opp.session_context.current_minute
 
         # Score quality of the break point.
@@ -158,7 +214,7 @@ def simulate_session_route(req: SimulateRequest):
         "binge_info": binge_info,
         "summary": {
             "total_breaks": len(decision_records),
-            "ads_shown": decision_counts.get("SHOW", 0) + decision_counts.get("SOFTEN", 0),
+            "ads_shown": decision_counts.get("SHOW", 0) + decision_counts.get("SWAP", 0),
             "final_fatigue": round(running_ctx.session_fatigue_accumulator, 4),
             "decision_counts": decision_counts,
         },

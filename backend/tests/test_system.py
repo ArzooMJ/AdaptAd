@@ -108,10 +108,10 @@ class TestFatigue:
         expected = min(1.0, max(user.fatigue_level, before + config.fatigue.show_increment))
         assert abs(updated.session_fatigue_accumulator - expected) < 0.001
 
-    def test_soften_increment_less_than_show(self, session_ctx, user):
+    def test_swap_increment_less_than_show(self, session_ctx, user):
         show_ctx = update_fatigue(session_ctx, user, AdDecision.SHOW, 0)
-        soften_ctx = update_fatigue(session_ctx, user, AdDecision.SOFTEN, 0)
-        assert soften_ctx.session_fatigue_accumulator < show_ctx.session_fatigue_accumulator
+        swap_ctx = update_fatigue(session_ctx, user, AdDecision.SWAP, 0)
+        assert swap_ctx.session_fatigue_accumulator < show_ctx.session_fatigue_accumulator
 
     def test_suppress_does_not_increase_fatigue(self, session_ctx, user):
         updated = update_fatigue(session_ctx, user, AdDecision.SUPPRESS, minutes_since_last_ad=0)
@@ -284,8 +284,8 @@ class TestSession:
         updated = apply_decision(session_ctx, user, AdDecision.SUPPRESS, current_minute=15, minutes_since_last_ad=5)
         assert updated.ads_shown_this_session == session_ctx.ads_shown_this_session
 
-    def test_apply_decision_soften_increments_ads(self, session_ctx, user):
-        updated = apply_decision(session_ctx, user, AdDecision.SOFTEN, current_minute=15, minutes_since_last_ad=5)
+    def test_apply_decision_swap_increments_ads(self, session_ctx, user):
+        updated = apply_decision(session_ctx, user, AdDecision.SWAP, current_minute=15, minutes_since_last_ad=5)
         assert updated.ads_shown_this_session == session_ctx.ads_shown_this_session + 1
 
     def test_apply_decision_updates_fatigue(self, session_ctx, user):
@@ -599,18 +599,18 @@ class TestMetrics:
 
     def test_diversity_index_uniform_decisions(self):
         # Equal split of all 4 = maximum diversity
-        counts = {"SHOW": 25, "SOFTEN": 25, "DELAY": 25, "SUPPRESS": 25}
+        counts = {"SHOW": 25, "SWAP": 25, "DELAY": 25, "SUPPRESS": 25}
         idx = compute_diversity_index(counts)
         assert abs(idx - 1.0) < 0.01
 
     def test_diversity_index_single_decision(self):
         # All same = zero diversity
-        counts = {"SHOW": 100, "SOFTEN": 0, "DELAY": 0, "SUPPRESS": 0}
+        counts = {"SHOW": 100, "SWAP": 0, "DELAY": 0, "SUPPRESS": 0}
         idx = compute_diversity_index(counts)
         assert idx == 0.0
 
     def test_diversity_index_in_bounds(self):
-        counts = {"SHOW": 60, "SOFTEN": 0, "DELAY": 0, "SUPPRESS": 40}
+        counts = {"SHOW": 60, "SWAP": 0, "DELAY": 0, "SUPPRESS": 40}
         idx = compute_diversity_index(counts)
         assert 0.0 <= idx <= 1.0
 

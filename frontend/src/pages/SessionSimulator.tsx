@@ -48,7 +48,7 @@ export default function SessionSimulator() {
   const fatigueSensitivity = policyGenes?.[0] ?? null
   const relevanceSensitivity = policyGenes?.[1] ?? null
   const delayBias = policyGenes?.[4] ?? null
-  const softenBias = policyGenes?.[5] ?? null
+  const swapRelevanceMin = policyGenes?.[5] ?? null
 
   const splitAndNormalize = (items: string[]) =>
     items
@@ -155,8 +155,8 @@ export default function SessionSimulator() {
                   <p className="font-mono text-zinc-300 mt-0.5">{delayBias != null ? delayBias.toFixed(2) : '—'} ({levelLabel(delayBias)})</p>
                 </div>
                 <div className="rounded-lg border border-violet-900/20 px-2.5 py-2">
-                  <p className="text-zinc-500">Swap zone width</p>
-                  <p className="font-mono text-zinc-300 mt-0.5">{softenBias != null ? softenBias.toFixed(2) : '—'} ({levelLabel(softenBias)})</p>
+                  <p className="text-zinc-500">Swap relevance min</p>
+                  <p className="font-mono text-zinc-300 mt-0.5">{swapRelevanceMin != null ? swapRelevanceMin.toFixed(2) : '—'} ({levelLabel(swapRelevanceMin)})</p>
                 </div>
               </div>
             </div>

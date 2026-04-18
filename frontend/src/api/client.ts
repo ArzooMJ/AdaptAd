@@ -102,7 +102,7 @@ export const abApi = {
     seed?: number
   }) =>
     api.post<{ session_id: string; user_name: string; content_title: string; session_x: unknown[]; session_y: unknown[] }>('/ab/custom', params),
-  rate: (sessionId: string, params: { session_label: string; annoyance: number; relevance: number; willingness: number; notes?: string }) =>
+  rate: (sessionId: string, params: { session_label: string; comfort: number; relevance: number; overall_experience: number; preferred_session: string; notes?: string }) =>
     api.post(`/ab/${sessionId}/rate`, params),
   results: () => api.get('/ab/results'),
   session: (sessionId: string) => api.get(`/ab/${sessionId}`),

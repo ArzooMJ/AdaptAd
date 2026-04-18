@@ -96,7 +96,7 @@ def test_single_decision():
     })
     assert r.status_code == 200
     d = r.json()
-    assert d["decision"] in ("SHOW", "SOFTEN", "DELAY", "SUPPRESS")
+    assert d["decision"] in ("SHOW", "SWAP", "DELAY", "SUPPRESS")
     assert 0.0 <= d["combined_score"] <= 1.0
     assert "user_advocate" in d
     assert "advertiser_advocate" in d

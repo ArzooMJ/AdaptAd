@@ -95,18 +95,23 @@ def apply_decision(
     decision: AdDecision,
     current_minute: int,
     minutes_since_last_ad: int = 5,
+    ad_category: Optional[str] = None,
 ) -> SessionContext:
     """
     Apply a decision to the session context.
 
-    Updates ads_shown_this_session and session_fatigue_accumulator.
-    This is the fix for the pre-computed ads_seen_so_far bug:
-    we mutate the context here rather than pre-computing.
+    Updates ads_shown_this_session, fatigue, and last-shown ad tracking.
     """
-    # Increment shown count for SHOW and SWAP — an ad ran in both cases.
     ads_shown = session_context.ads_shown_this_session
+    last_category = session_context.last_shown_ad_category
+    last_minute = session_context.last_shown_ad_minute
+
     if decision in (AdDecision.SHOW, AdDecision.SWAP):
         ads_shown += 1
+        if ad_category:
+            last_category = ad_category
+        last_minute = current_minute
+
     updated = session_context.model_copy(
         update={
             "ads_shown_this_session": ads_shown,
@@ -114,6 +119,8 @@ def apply_decision(
             "session_duration_minutes": max(
                 session_context.session_duration_minutes, current_minute
             ),
+            "last_shown_ad_category": last_category,
+            "last_shown_ad_minute": last_minute,
         }
     )
     updated = update_fatigue(updated, user, decision, minutes_since_last_ad)

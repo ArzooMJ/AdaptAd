@@ -20,7 +20,7 @@ def compute_diversity_index(decision_counts: dict[str, int]) -> float:
     total = sum(decision_counts.values())
     if total == 0:
         return 0.0
-    max_entropy = math.log2(3)  # 3 decision types: SHOW, SWAP, SUPPRESS.
+    max_entropy = math.log2(4)  # 4 decision types: SHOW, SWAP, DELAY, SUPPRESS.
     entropy = 0.0
     for count in decision_counts.values():
         if count > 0:

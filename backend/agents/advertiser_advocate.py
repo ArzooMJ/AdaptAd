@@ -23,16 +23,17 @@ def score_advertiser_advocate(
     c = chromosome
     factors: dict[str, float] = {}
 
-    base = 0.55
+    base = 0.30
     factors["base"] = base
 
-    # Relevance boost: does the ad category match user interests?
+    # Relevance boost/penalty: does the ad category match user interests?
+    # Non-relevant ads have poor CTR — bad for advertisers, not just neutral.
     relevant = ad.category in user.interests
-    relevance_boost = (c.category_boost * 1.5) if relevant else 0.0
+    relevance_boost = (c.category_boost * 1.5) if relevant else -0.20
     factors["relevance_boost"] = round(relevance_boost, 4)
 
     # Engagement: higher engagement users are more valuable targets.
-    engagement_boost = user.engagement_score * 0.3
+    engagement_boost = user.engagement_score * 0.15
     factors["engagement_boost"] = round(engagement_boost, 4)
 
     # Primetime boost: grounded in Avazu hourly CTR data.
@@ -58,7 +59,7 @@ def score_advertiser_advocate(
 
     # Demographic match: ad targets this age group explicitly.
     demographic_match = user.age_group in ad.target_demographics
-    demo_bonus = 0.08 if demographic_match else 0.0
+    demo_bonus = 0.05 if demographic_match else 0.0
     factors["demographic_match"] = round(demo_bonus, 4)
 
     score = (

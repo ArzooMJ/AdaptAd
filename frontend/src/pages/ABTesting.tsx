@@ -10,7 +10,7 @@ const AGE_GROUPS = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+']
 const WATCH_TIMES = ['morning', 'afternoon', 'evening', 'latenight']
 
 // ── types ─────────────────────────────────────────────────────────────────────
-interface Break { break_minute: number; ad_category: string; decision: string; original_category?: string; advertiser?: string; duration_seconds?: number }
+interface Break { break_minute: number; ad_category: string; decision: string; original_category?: string; original_advertiser?: string; advertiser?: string; duration_seconds?: number; deferred?: boolean; delayed_from_minute?: number }
 interface UserProfile {
   name: string; age_group: string; profession: string
   interests: string[]; content_preferences: string[]
@@ -32,13 +32,14 @@ interface Session {
   content_profile?: ContentProfile
   session_context?: SessionContext
 }
-interface Rating { annoyance: number; relevance: number; willingness: number }
+interface Rating { comfort: number; relevance: number; overall_experience: number }
 interface HistoryEntry {
   session_id: string; user_name: string; user_age_group: string
   content_title: string; content_genre: string; is_custom: boolean; created_at: string
   adaptad_score: number | null; baseline_score: number | null; winner: string
-  adaptad_ratings: { annoyance: number | null; relevance: number | null; willingness: number | null }
-  baseline_ratings: { annoyance: number | null; relevance: number | null; willingness: number | null }
+  preferred_session: string | null
+  adaptad_ratings: { comfort: number | null; relevance: number | null; overall_experience: number | null }
+  baseline_ratings: { comfort: number | null; relevance: number | null; overall_experience: number | null }
 }
 
 const EMPTY_FORM = {
@@ -71,10 +72,10 @@ function ScaleRating({ value, onChange, readonly }: {
   value: number; onChange?: (v: number) => void; readonly?: boolean
 }) {
   return (
-    <div className="flex gap-1 flex-wrap">
-      {[1,2,3,4,5,6,7,8,9,10].map(n => (
+    <div className="flex gap-1.5 flex-wrap">
+      {[1,2,3,4,5].map(n => (
         <button key={n} onClick={() => !readonly && onChange?.(n)}
-          className={`w-7 h-7 rounded-md text-xs font-semibold border transition-colors ${
+          className={`w-9 h-9 rounded-lg text-sm font-semibold border transition-colors ${
             n === value
               ? 'bg-sky-600 border-sky-500 text-white'
               : readonly
@@ -176,26 +177,48 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
                   {pod.minute}m — {pod.ads.length} ad{pod.ads.length > 1 ? 's' : ''}
                 </span>
                 {pod.ads.map((b, j) => (
-                  <div key={j} className="flex items-center gap-2 pl-1 flex-wrap">
-                    <span className="text-slate-600 text-xs w-3">{j + 1}.</span>
-                    <DecisionBadge decision={b.decision} size="sm" />
-                    {b.decision === 'SWAP' && b.original_category
-                      ? <span className="text-slate-500 text-xs"><span className="line-through opacity-50">{b.original_category}</span> → {b.ad_category}</span>
-                      : <span className="text-slate-500 text-xs">{b.ad_category}</span>
-                    }
-                    {b.advertiser && <span className="text-slate-600 text-xs">· {b.advertiser}</span>}
-                    {b.duration_seconds && <span className="text-slate-700 text-xs font-mono">{b.duration_seconds}s</span>}
+                  <div key={j} className="flex items-start gap-2 pl-1 flex-wrap">
+                    <span className="text-slate-600 text-xs w-3 mt-0.5">{j + 1}.</span>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <DecisionBadge decision={b.decision} size="sm" />
+                        {b.decision === 'SWAP' && b.original_category ? (
+                          <span className="text-xs text-slate-400">
+                            <span className="line-through text-slate-600">{b.original_category}</span>
+                            {b.original_advertiser && <span className="line-through text-slate-700"> · {b.original_advertiser}</span>}
+                            <span className="text-slate-500 mx-1">→</span>
+                            <span className="text-emerald-400">{b.ad_category}</span>
+                            {b.advertiser && <span className="text-emerald-600"> · {b.advertiser}</span>}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">{b.ad_category}
+                            {b.advertiser && <span className="text-slate-600"> · {b.advertiser}</span>}
+                          </span>
+                        )}
+                        {b.duration_seconds && <span className="text-slate-700 text-xs font-mono">{b.duration_seconds}s</span>}
+                      </div>
+                      {b.deferred && b.delayed_from_minute !== undefined && (
+                        <span className="text-[10px] text-amber-500/70">
+                          ↑ delayed from min {b.delayed_from_minute}, now playing
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             ))}
       </div>
       <div className="border-t border-slate-700/40 pt-3 space-y-3">
-        {(['annoyance', 'relevance', 'willingness'] as (keyof Rating)[]).map(field => (
+        {([
+          { field: 'comfort' as keyof Rating, label: 'Comfort', hint: '1 = very disruptive · 5 = seamless' },
+          { field: 'relevance' as keyof Rating, label: 'Relevance', hint: '1 = irrelevant · 5 = spot on' },
+          { field: 'overall_experience' as keyof Rating, label: 'Overall Experience', hint: '1 = poor · 5 = excellent' },
+        ]).map(({ field, label, hint }) => (
           <div key={field} className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              {field === 'willingness' ? 'Would Continue?' : field}
-            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
+              <span className="text-[9px] text-slate-600">{hint}</span>
+            </div>
             <ScaleRating value={rating[field]} onChange={v => onRate?.(field, v)} readonly={readonly} />
           </div>
         ))}
@@ -208,14 +231,17 @@ function SessionCard({ label, breaks, rating, onRate, readonly = false }: {
 
 export default function ABTesting() {
   const {
-    abSession: _abSession, abXRating: xRating, abYRating: yRating, abSubmitted: submitted,
-    setAbSession, setAbXRating, setAbYRating, setAbSubmitted, clearAbTest,
+    abSession: _abSession, abXRating: xRating, abYRating: yRating,
+    abPreferredSession: preferredSession, abSubmitted: submitted,
+    setAbSession, setAbXRating, setAbYRating, setAbPreferredSession,
+    setAbSubmitted, clearAbTest,
   } = useStore()
 
   const session = _abSession as Session | null
   const setSession = setAbSession as (s: Session | null) => void
   const setXRating = (r: Rating) => setAbXRating(r)
   const setYRating = (r: Rating) => setAbYRating(r)
+  const setPreferredSession = setAbPreferredSession
   const setSubmitted = setAbSubmitted
 
   const [form, setForm] = useState(EMPTY_FORM)
@@ -287,12 +313,15 @@ export default function ABTesting() {
   async function submitRatings() {
     if (!session) return
     if (Object.values(xRating).some(v => v === 0) || Object.values(yRating).some(v => v === 0)) {
-      setError('Please rate all three fields (1–10) for both sessions.'); return
+      setError('Please rate all three fields (1–5) for both sessions.'); return
+    }
+    if (!preferredSession) {
+      setError('Please select which session you preferred.'); return
     }
     setLoading(true); setError(null)
     try {
-      await abApi.rate(session.session_id, { session_label: 'X', ...xRating })
-      await abApi.rate(session.session_id, { session_label: 'Y', ...yRating })
+      await abApi.rate(session.session_id, { session_label: 'X', ...xRating, preferred_session: preferredSession })
+      await abApi.rate(session.session_id, { session_label: 'Y', ...yRating, preferred_session: preferredSession })
       setResults((await abApi.results()).data)
       setSubmitted(true)
       refreshHistory()
@@ -306,8 +335,8 @@ export default function ABTesting() {
   if (submitted && session?.x_is_adaptad !== undefined) {
     const ar = session.x_is_adaptad ? xRating : yRating
     const br = session.x_is_adaptad ? yRating : xRating
-    adaptadScore = ar.willingness + ar.relevance - ar.annoyance
-    baselineScore = br.willingness + br.relevance - br.annoyance
+    adaptadScore = ar.comfort + ar.relevance + ar.overall_experience
+    baselineScore = br.comfort + br.relevance + br.overall_experience
     winner = adaptadScore > baselineScore ? 'adaptad' : adaptadScore < baselineScore ? 'baseline' : 'tie'
   }
   const aggregate = (results as Record<string, unknown> | null)?.aggregate as Record<string, unknown> | undefined
@@ -322,8 +351,8 @@ export default function ABTesting() {
         <div>
           <h1 className="page-title">A/B Testing</h1>
           <p className="page-sub">
-            Fill in your profile and what you're watching — AdaptAd will run a blind test so you can rate
-            two ad experiences without knowing which was AI-optimised.
+            Fill in your profile and what you're watching — AdaptAd will run both an Industry Standard
+            schedule and the AdaptAd system side-by-side so you can compare and rate them directly.
           </p>
         </div>
         {session && (
@@ -511,11 +540,13 @@ export default function ABTesting() {
 
           {/* Rating guide */}
           {!submitted && (
-            <div className="card text-xs" style={{ color: 'var(--text-muted)' }}>
-              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>How to rate (1–10): </span>
-              <span className="text-sky-400">Annoyance</span> — 1 = very annoying, 10 = barely noticeable ·{' '}
-              <span className="text-sky-400">Relevance</span> — 1 = irrelevant to you, 10 = spot on ·{' '}
-              <span className="text-sky-400">Would Continue</span> — 1 = would stop watching, 10 = definitely keep going
+            <div className="card text-xs space-y-1" style={{ color: 'var(--text-muted)' }}>
+              <div>
+                <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Rate each session 1–5: </span>
+                <span className="text-sky-400">Comfort</span> — how non-disruptive the ad breaks felt ·{' '}
+                <span className="text-sky-400">Relevance</span> — how relevant the ads were to you ·{' '}
+                <span className="text-sky-400">Overall Experience</span> — your overall ad experience quality
+              </div>
             </div>
           )}
 
@@ -526,6 +557,22 @@ export default function ABTesting() {
             <SessionCard label="B — AdaptAd" breaks={session.session_y as Break[]} rating={yRating}
               onRate={(f, v) => setYRating({ ...yRating, [f]: v })} readonly={submitted} />
           </div>
+
+          {!submitted && (
+            <div className="card space-y-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Overall, which session did you prefer?</p>
+              <div className="flex flex-wrap gap-2">
+                {['Industry Standard', 'AdaptAd', 'No preference'].map(opt => (
+                  <button key={opt} onClick={() => setPreferredSession(opt)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                      preferredSession === opt
+                        ? 'bg-sky-600/20 border-sky-500/60 text-sky-300'
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                    }`}>{opt}</button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {!submitted && (
             <button className="btn-primary" onClick={submitRatings} disabled={loading}>
@@ -546,20 +593,26 @@ export default function ABTesting() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-xl px-4 py-3 border border-slate-700/40" style={{ backgroundColor: 'var(--bg-card-deep)' }}>
                   <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                    Industry Standard (Session A): <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{baselineScore > 0 ? '+' : ''}{baselineScore} / 19</span>
+                    Industry Standard (Session A): <span className="font-mono text-lg" style={{ color: 'var(--text-primary)' }}>{baselineScore} / 15</span>
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Fixed priority-order schedule — every ad served as scheduled, no personalisation.</p>
                 </div>
                 <div className="rounded-xl px-4 py-3 border border-sky-700/40 bg-sky-900/10">
                   <p className="text-xs text-sky-500 font-semibold mb-1">
-                    AdaptAd (Session B): <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{adaptadScore > 0 ? '+' : ''}{adaptadScore} / 19</span>
+                    AdaptAd (Session B): <span className="font-mono text-lg" style={{ color: 'var(--text-primary)' }}>{adaptadScore} / 15</span>
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Same breaks, same slots — selects the most relevant ad for you at each moment.</p>
                 </div>
               </div>
 
+              {preferredSession && (
+                <div className="rounded-xl px-4 py-3 text-xs border border-slate-700/40" style={{ backgroundColor: 'var(--bg-card-deep)', color: 'var(--text-muted)' }}>
+                  You preferred: <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{preferredSession}</span>
+                </div>
+              )}
+
               <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: 'var(--bg-card-deep)', color: 'var(--text-muted)' }}>
-                Score = Willingness + Relevance − Annoyance &nbsp;·&nbsp; Range: −8 to +19 &nbsp;·&nbsp; Higher wins.
+                Score = Comfort + Relevance + Overall Experience &nbsp;·&nbsp; Range: 3–15 &nbsp;·&nbsp; Higher is better.
               </div>
 
               {aggregate && (
